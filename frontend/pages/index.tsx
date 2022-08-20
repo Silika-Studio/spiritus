@@ -57,12 +57,12 @@ export default function Home() {
 
             <main>
                 <VStack h="100vh" w="100vw"
-                    className="bg" justifyContent="space-between" spacing="24px" alignItems="center">
+                    className="bg" justifyContent="space-between" spacing="0px" alignItems="center">
                     <Stack h="64px" w="100vw"></Stack>
-                    <Image src="./spiritusmin.svg" alt="" w="48%" h="auto"
+                    <Image src="./spiritusmin.svg" alt="" w="46%" h="auto"
                     />
                     <Link href="/demo">
-                        <Button h="100px" w="300px"
+                        <Button h="80px" w="300px"
                             // borderRadius="12px"
                             backgroundColor={theme.colours.teal}
                             _hover={{ backgroundColor: theme.colours.teal }}

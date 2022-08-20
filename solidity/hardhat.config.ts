@@ -8,7 +8,7 @@ import "solidity-coverage";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "mumbai",
+  defaultNetwork: "hardhat",
   networks: {
     hardhat: {},
     mumbai: {

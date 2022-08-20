@@ -1,1 +1,397 @@
-// TODO Write code to pull from IPFS and generate assets
+import type { Attribute, Metadata, Layer } from "./types";
+type LoadedImage = ReturnType<typeof loadLayerImg>;
+
+const basePath = process.cwd();
+
+const fs = require("fs");
+const sha1 = require("sha1");
+const { createCanvas, loadImage } = require("canvas");
+const buildDir = `${basePath}/build`;
+const layersDir = `${basePath}/layers`;
+import axios from "axios";
+const {
+  format,
+  baseUri,
+  description,
+  background,
+  uniqueDNATolerance,
+  layerConfigurations,
+  rarityDelimiter,
+  debugLogs,
+  namePrefix,
+} = require(`${basePath}/utils/config.ts`);
+const canvas = createCanvas(format.width, format.height);
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = format.smoothing;
+let metadataList: Metadata[] = [];
+let attributesList: Attribute[] = [];
+let dnaList = new Set();
+const DNA_DELIMITER = "#";
+
+const buildSetup = () => {
+  if (fs.existsSync(buildDir)) {
+    fs.rmdirSync(buildDir, { recursive: true });
+  }
+  fs.mkdirSync(buildDir);
+  fs.mkdirSync(`${buildDir}/json`);
+  fs.mkdirSync(`${buildDir}/images`);
+};
+
+const getRarityWeight = (layerName: string) => {
+  let nameWithoutExtension = layerName.split(".")[0];
+  let nameWithoutWeight = Number(
+    nameWithoutExtension.split(rarityDelimiter).pop()
+  );
+  if (isNaN(nameWithoutWeight)) {
+    nameWithoutWeight = 1;
+  }
+  return nameWithoutWeight;
+};
+
+const cleanDna = (_str: string) => {
+  const withoutOptions = removeQueryStrings(_str);
+  let dna = Number(withoutOptions.split(":").shift());
+  return dna;
+};
+
+const cleanName = (_str: string) => {
+  let nameWithoutExtension = _str.slice(0, -4);
+  let nameWithoutWeight = nameWithoutExtension.split(rarityDelimiter).shift();
+  return nameWithoutWeight;
+};
+
+const getElements = (path: string) => {
+  return fs
+    .readdirSync(path)
+    .filter((item: any) => !/(^|\/)\.[^\/\.]/g.test(item))
+    .map((layer: string, index: number) => {
+      if (layer.includes("-")) {
+        throw new Error(
+          `layer name can not contain dashes, please fix: ${layer}`
+        );
+      }
+      return {
+        id: index,
+        name: cleanName(layer),
+        filename: layer,
+        path: `${path}${layer}`,
+        weight: getRarityWeight(layer),
+      };
+    });
+};
+
+interface UploadTraitType {
+  value: string;
+  url: string;
+}
+
+type UploadCollectionTraits = {
+  rootHash: string;
+  collectionName: string;
+  traits: Record<string, UploadTraitType[]>;
+};
+
+interface LoadTraitType {
+  value: string;
+  url: string;
+  data: Buffer;
+}
+
+type LoadCollectionTraits = {
+  layerHash: string;
+  collectionName: string;
+  traits: Record<string, LoadTraitType[]>;
+};
+
+const getIPFSElements = async (trait_value: string) => {
+  const layers: LoadCollectionTraits = {
+    layerHash: "QmZ6mcScDMKiYt49fddbMzFwmfmc6os2a7QsbeJ7ocZP2M",
+    collectionName: "nouns",
+    traits: {},
+  };
+  const ipfsGatewayUrl = "https://ipfs.moralis.io:2053/ipfs/";
+  const rootHash = "QmZKH3RWrXpEc1hqFVZhmPzVdunzD3V7KEhzmyobKdpneA";
+  const r = await axios.get<UploadCollectionTraits>(
+    `${ipfsGatewayUrl}${layers.layerHash}/layers.json`
+  );
+
+  let finals = r.data.traits[trait_value]
+    .filter((item: any) => !/(^|\/)\.[^\/\.]/g.test(item))
+    .map((layer: any, index: number) => {
+      return {
+        id: index,
+        name: layer.value,
+        filename: layer.value,
+        path: `${ipfsGatewayUrl}${rootHash}/${layer.url}`,
+        weight: 3,
+      };
+    });
+  return finals;
+};
+
+const layersSetup = async (layersOrder: any) => {
+  const layers = layersOrder.map(async (layerObj: any, index: number) => ({
+    id: index,
+    elements: await getIPFSElements(`${layerObj.name}`),
+
+    name:
+      layerObj.options?.["displayName"] != undefined
+        ? layerObj.options?.["displayName"]
+        : layerObj.name,
+    blend:
+      layerObj.options?.["blend"] != undefined
+        ? layerObj.options?.["blend"]
+        : "source-over",
+    opacity:
+      layerObj.options?.["opacity"] != undefined
+        ? layerObj.options?.["opacity"]
+        : 1,
+    bypassDNA:
+      layerObj.options?.["bypassDNA"] !== undefined
+        ? layerObj.options?.["bypassDNA"]
+        : false,
+  }));
+  return layers;
+};
+const saveImage = (editionCount: number) => {
+  fs.writeFileSync(
+    `${buildDir}/images/${editionCount}.png`,
+    canvas.toBuffer("image/png")
+  );
+};
+
+const addMetadata = (_dna: string, _edition: number) => {
+  let dateTime = Date.now();
+  let tempMetadata: Metadata = {
+    name: `${namePrefix} #${_edition}`,
+    description: description,
+    image: `${baseUri}/${_edition}.png`,
+    dna: sha1(_dna),
+    edition: _edition,
+    date: dateTime,
+    attributes: attributesList,
+  };
+
+  metadataList.push(tempMetadata);
+  attributesList = [];
+};
+
+const addAttributes = (_element: any) => {
+  let selectedElement = _element.layer.selectedElement;
+  attributesList.push({
+    trait_type: _element.layer.name,
+    value: selectedElement.name,
+  });
+};
+
+const loadLayerImg = async (_layer: LayerWithDNA) => {
+  console.log(`${_layer.selectedElement.path}`);
+  try {
+    return new Promise(async (resolve) => {
+      const image = await loadImage(`${_layer.selectedElement.path}`);
+      resolve({ layer: _layer, loadedImage: image });
+    });
+  } catch (error) {
+    console.error("Error loading image:", error);
+  }
+};
+
+const drawElement = (_renderObject: any) => {
+  ctx.globalAlpha = _renderObject.layer.opacity;
+  ctx.globalCompositeOperation = _renderObject.layer.blend;
+
+  ctx.drawImage(_renderObject.loadedImage, 0, 0, format.width, format.height);
+
+  addAttributes(_renderObject);
+};
+
+interface LayerWithDNA {
+  name: string;
+  blend: string;
+  opacity: number;
+  selectedElement: any;
+}
+
+const constructLayerToDna = (_dna = "", _layers = []) => {
+  let mappedDnaToLayers: LayerWithDNA[] = _layers.map((layer: any, index) => {
+    let selectedElement = layer.elements.find(
+      (e: any) => e.id == cleanDna(_dna.split(DNA_DELIMITER)[index])
+    );
+    return {
+      name: layer.name,
+      blend: layer.blend,
+      opacity: layer.opacity,
+      selectedElement: selectedElement,
+    };
+  });
+  return mappedDnaToLayers;
+};
+
+/**
+ * In some cases a DNA string may contain optional query parameters for options
+ * such as bypassing the DNA isUnique check, this function filters out those
+ * items without modifying the stored DNA.
+ *
+ * @param {String} _dna New DNA string
+ * @returns new DNA string with any items that should be filtered, removed.
+ */
+const filterDNAOptions = (_dna: any) => {
+  const dnaItems = _dna.split(DNA_DELIMITER);
+  const filteredDNA = dnaItems.filter((element: any) => {
+    const query = /(\?.*$)/;
+    const querystring = query.exec(element);
+    if (!querystring) {
+      return true;
+    }
+    const options: any = querystring[1].split("&").reduce((r, setting) => {
+      const keyPairs = setting.split("=");
+      return { ...r, [keyPairs[0]]: keyPairs[1] };
+    }, []);
+
+    return options.bypassDNA;
+  });
+
+  return filteredDNA.join(DNA_DELIMITER);
+};
+
+/**
+ * Cleaning function for DNA strings. When DNA strings include an option, it
+ * is added to the filename with a ?setting=value query string. It needs to be
+ * removed to properly access the file name before Drawing.
+ *
+ * @param {String} dna The entire newDNA string
+ * @returns Cleaned DNA string without querystring parameters.
+ */
+const removeQueryStrings = (dna: string) => {
+  const query = /(\?.*$)/;
+  return dna.replace(query, "");
+};
+
+const isDnaUnique = (dnaList = new Set(), dna = "") => {
+  const filteredDNA = filterDNAOptions(dna);
+  return !dnaList.has(filteredDNA);
+};
+
+const createDna = (_layers: any) => {
+  let randNum: any[] = [];
+  _layers.forEach((layer: any) => {
+    let totalWeight = 0;
+    layer.elements.forEach((element: any) => {
+      totalWeight += element.weight;
+    });
+    // number between 0 - totalWeight
+    let random = Math.floor(Math.random() * totalWeight);
+    for (let i = 0; i < layer.elements.length; i++) {
+      // subtract the current weight from the random weight until we reach a sub zero value.
+      random -= layer.elements[i].weight;
+      if (random < 0) {
+        return randNum.push(
+          `${layer.elements[i].id}:${layer.elements[i].filename}${
+            layer.bypassDNA ? "?bypassDNA=true" : ""
+          }`
+        );
+      }
+    }
+  });
+  return randNum.join(DNA_DELIMITER);
+};
+
+const writeMetaData = (jsonData: string) => {
+  fs.writeFileSync(`${buildDir}/json/_metadata.json`, jsonData);
+};
+
+const saveMetaDataSingleFile = (editionCount: number) => {
+  let metadata = metadataList.find(
+    (meta: Metadata) => meta.edition == editionCount
+  );
+  debugLogs
+    ? console.log(
+        `Writing metadata for ${editionCount}: ${JSON.stringify(metadata)}`
+      )
+    : null;
+  fs.writeFileSync(
+    `${buildDir}/json/${editionCount}.json`,
+    JSON.stringify(metadata, null, 2)
+  );
+};
+
+const createNFT = async (
+  editionSize: number,
+  debug: boolean = false,
+  dnaTolerance: number = 10000
+) => {
+  let layerConfigIndex = 0;
+  let editionCount = 1;
+  let failedCount = 0;
+  let editionInd: number[] = [];
+  for (let i = 1; i <= editionSize; i++) {
+    editionInd.push(i);
+  }
+  debug ? console.log("Editions left to create: ", editionInd) : null;
+  while (layerConfigIndex < layerConfigurations.length) {
+    // TODO Change layersSetup to parse given folder like in Rust engine
+    const layers = await layersSetup(
+      layerConfigurations[layerConfigIndex].layersOrder
+    );
+    let layerValues: any = await Promise.all(layers);
+
+    while (editionCount <= editionSize) {
+      let newDna = createDna(layerValues);
+      console.log(newDna);
+      if (isDnaUnique(dnaList, newDna)) {
+        let results: LayerWithDNA[] = constructLayerToDna(newDna, layerValues);
+        let loadedElements: LoadedImage[] = [];
+
+        results.forEach((layer: LayerWithDNA) => {
+          loadedElements.push(loadLayerImg(layer));
+        });
+
+        await Promise.all(loadedElements).then((renderObjectArray) => {
+          debug ? console.log("Clearing canvas") : null;
+          ctx.clearRect(0, 0, format.width, format.height);
+          renderObjectArray.forEach((renderObject) => {
+            drawElement(renderObject);
+          });
+          debug ? console.log("Editions left to create: ", editionInd) : null;
+          saveImage(editionInd[0]);
+          addMetadata(newDna, editionInd[0]);
+          saveMetaDataSingleFile(editionInd[0]);
+          console.log(
+            `Created edition: ${editionInd[0]}, with DNA: ${sha1(newDna)}`
+          );
+        });
+        dnaList.add(filterDNAOptions(newDna));
+        editionCount++;
+        editionInd.shift();
+      } else {
+        console.log("DNA exists!");
+        failedCount++;
+        if (failedCount >= dnaTolerance) {
+          console.log(`Not enough layers for collection size: ${editionSize}`);
+          process.exit();
+        }
+      }
+    }
+    layerConfigIndex++;
+  }
+  writeMetaData(JSON.stringify(metadataList, null, 2));
+};
+
+createNFT(5, true);
+
+// layersSetup([
+//   { name: "bg" },
+//   { name: "body" },
+//   { name: "head" },
+//   { name: "glasses" },
+//   { name: "accessory" },
+// ]);
+// layersSetup([
+//   { name: "Background" },
+//   { name: "Eyeball" },
+//   { name: "Eye color" },
+//   { name: "Iris" },
+//   { name: "Shine" },
+//   { name: "Bottom lid" },
+//   { name: "Top lid" },
+// ]);

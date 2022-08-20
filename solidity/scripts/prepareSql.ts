@@ -1,4 +1,5 @@
 const prepareMetadata = require("./metadataProcessing");
+const loadAllLayers = require("./loadAllLayers");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -50,10 +51,10 @@ async function prepareSql(
   }
 
   const layersStatements = [];
-  const layers = ipfs.lookupjson();
+  const layers = loadAllLayers();
   for await (let layer of layers) {
-    const { trait_type, value, layer_id, layer_uri } = layer;
-    const layersStatement = `INSERT INTO ${layersTable} (id, trait_type, value, uri) VALUES (${layer_id},'${trait_type}', '${value}', '${layer_uri}');`;
+    const { trait_type, value, id, uri } = layer;
+    const layersStatement = `INSERT INTO ${layersTable} (id, trait_type, value, uri) VALUES (${id},'${trait_type}', '${value}', '${uri}');`;
     layersStatements.push(layersStatement);
   }
 

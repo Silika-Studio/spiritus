@@ -14,6 +14,7 @@
         "@emotion/styled": "^11.10.0",
         "@walletconnect/client": "^1.8.0",
         "@walletconnect/qrcode-modal": "^1.8.0",
+        "axios": "^0.27.2",
         "better-sqlite3": "^7.6.2",
         "framer-motion": "^7.2.0",
         "keccak256": "^1.0.6",

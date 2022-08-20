@@ -15,7 +15,7 @@ class MyDocument extends Document {
                     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
                     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
                 </Head>
-                <body >
+                <body style={{ fontFamily: "Poppins, sans-serif" }}>
                     <Main />
                     <NextScript />
                 </body>

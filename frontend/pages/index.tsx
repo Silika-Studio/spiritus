@@ -1,54 +1,52 @@
 import { Button, HStack, Image, Stack, Text, VStack } from "@chakra-ui/react";
-import keccak256 from "keccak256";
 // import client from "@walletconnect/sign-client";
 import Head from 'next/head';
-import { useEffect } from 'react';
-import { Navbar } from "../components/Navbar";
-import { useWallet } from "../hooks/useWallet";
+import Link from "next/link";
+import theme from "../theme/theme";
 
 export default function Home() {
-    const { client } = useWallet();
-    useEffect(() => {
-        console.log(client);
-        // else { client.killSession && client.killSession(); }
-    }, [client]);
+    // const { client } = useWallet();
+    // useEffect(() => {
+    //     console.log(client);
+    //     // else { client.killSession && client.killSession(); }
+    // }, [client]);
 
-    useEffect(() => {
-        console.log('signing');
-        console.log(client);
-        // Check if connection is already established
-        if (client.connected) {
+    // useEffect(() => {
+    //     console.log('signing');
+    //     console.log(client);
+    //     // Check if connection is already established
+    //     if (client.connected) {
 
-            const message = "My email is john@doe.com - 1537836206101";
-            const address = client.accounts[0];
-            console.log(client.accounts);
-            const msgParams = [
-                address,
-                // keccak256("\x19Ethereum Signed Message:\n" + message.length + message)
-                `0x${keccak256("\x19Ethereum Signed Message:\n" + message.length + message)}`
+    //         const message = "My email is john@doe.com - 1537836206101";
+    //         const address = client.accounts[0];
+    //         console.log(client.accounts);
+    //         const msgParams = [
+    //             address,
+    //             // keccak256("\x19Ethereum Signed Message:\n" + message.length + message)
+    //             `0x${keccak256("\x19Ethereum Signed Message:\n" + message.length + message)}`
 
-            ];
+    //         ];
 
-            console.log(msgParams);
+    //         console.log(msgParams);
 
-            // Sign message
-            client
-                .signPersonalMessage(msgParams)
-                .then((result) => {
-                    // Returns signature.
-                    console.log(result);
-                })
-                .catch(error => {
-                    // Error returned when rejected
-                    console.error(error);
-                });
+    //         // Sign message
+    //         client
+    //             .signPersonalMessage(msgParams)
+    //             .then((result) => {
+    //                 // Returns signature.
+    //                 console.log(result);
+    //             })
+    //             .catch(error => {
+    //                 // Error returned when rejected
+    //                 console.error(error);
+    //             });
 
-            // Get provided accounts and chainId
-            console.log(client);
+    //         // Get provided accounts and chainId
+    //         console.log(client);
 
-        }
+    //     }
 
-    }, [client]);
+    // }, [client]);
     return (
         <div >
             <Head>
@@ -58,29 +56,45 @@ export default function Home() {
             </Head>
 
             <main>
-                <Navbar></Navbar>
                 <VStack h="100vh" w="100vw"
                     className="bg" justifyContent="space-between" spacing="24px" alignItems="center">
                     <Stack h="64px" w="100vw"></Stack>
                     <Image src="./spiritusmin.svg" alt="" w="48%" h="auto"
                     />
-                    <Button h="100px" w="300px"
-                        borderRadius="12px" backgroundColor="#3FD1FF"
-                        fontFamily="Poppins, Arial, sans-serif"
-                        fontSize="32px"
-                    > Demo</Button>
-                    <HStack h="36px" w="100vw" backgroundColor="#3FD1FF" alignItems="center" justifyContent="space-evenly">
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
-                        <Text color="white">learn more </Text>
+                    <Link href="/demo">
+                        <Button h="100px" w="300px"
+                            // borderRadius="12px"
+                            backgroundColor={theme.colours.teal}
+                            _hover={{ backgroundColor: theme.colours.teal }}
+                            className="button-see-more"
+                            fontFamily="Poppins, Arial, sans-serif"
+                            fontSize="32px"
+                            fontWeight="bold"
+                            borderRadius="0px"
+                            border={"none"}
+                        >
+                            <span className="line-1"></span>
+                            <span className="line-2"></span>
+                            <span className="line-3"></span>
+                            <span className="line-4"></span>
+                            <span className="line-5"></span>
+                            <span className="line-6"></span>
+                            Demo</Button>
+                    </Link>
+
+                    <HStack h="36px" w="100vw" backgroundColor="#3FD1FF" alignItems="center" justifyContent="space-evenly"
+                        color={theme.colours.textDarkLight}>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
+                        <Text >learn more </Text>
 
                     </HStack>
                 </VStack>

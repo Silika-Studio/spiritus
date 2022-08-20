@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { Interface } from "ethers/lib/utils";
 import fs from 'fs';
 
+export const NOUNS_CONTRACT_ADDRESS = '0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03';
 export const OPENSEA_IPFS_GATEWAY = 'https://opensea.mypinata.cloud';
 export type Network = 'mainnet' | 'polygon-mumbai';
 
@@ -27,4 +28,12 @@ export const getProvider = (network: Network) => {
 export const getABI = (contractAddress: string) => {
     return new Interface(fs.readFileSync(`./abis/${contractAddress}.json`, { encoding: 'utf-8' }));
     // return JSON.stringify();
+};
+
+const jsonEncodedPrepend = 'application/json;base64,';
+
+export const decodeBase64TokenURI = (tokenURI: string) => {
+    return JSON.parse(
+        Buffer.from(tokenURI.substring(tokenURI.indexOf('application/json;base64,') + jsonEncodedPrepend.length), 'base64').toString('ascii'),
+    );
 };

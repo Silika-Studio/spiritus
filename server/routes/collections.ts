@@ -56,5 +56,12 @@ router.post('/collections/:contract/:tokenID', async (
 ) => {
     const { contract } = req.params;
 
+    // Generate new image
+    // Save CID and new traits
+
+    // if writeable and `write` is true, write the data to the contract
+
+    // return new CID and traits
+
     return res.json({ success: true, data: 'success for ' + contract });
 });

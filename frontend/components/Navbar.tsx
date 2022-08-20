@@ -1,4 +1,4 @@
-import { Button, HStack, Stack, Text } from "@chakra-ui/react";
+import { Button, HStack, Image, Stack, Text } from "@chakra-ui/react";
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
@@ -41,15 +41,16 @@ export const Navbar: React.FC = () => {
             >
                 <Link href="/"
                 >
-                    <Stack
+                    <HStack
                         transition="0.4s"
                         _hover={
                             { transform: 'scale(1.03)' }
                         }
                         cursor="pointer"
                     >
+                        <Image src={hasBackground ? "./logo-dark.png" : "./logo-white.png"} h="56px" w="auto" alt="Spiritus logo" />
                         <Text fontFamily="Poppins" fontSize="36px" fontWeight="bold">Spiritus</Text>
-                    </Stack>
+                    </HStack>
                 </Link>
                 <HStack spacing="36px">
                     <ButtonShadow >

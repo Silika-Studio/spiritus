@@ -151,6 +151,11 @@ margin:0px
 box-shadow: #00007466 5px 5px, #0000744d 10px 10px, #00007433 15px 15px, #0000741a 20px 20px, #0000740d 25px 25px;
 }
 
+.nav-button-light{
+
+box-shadow: #00FFFF66 5px 5px, #00FFFF4d 10px 10px, #00FFFF33 15px 15px, #00FFFF1a 20px 20px, #00FFFF0d 25px 25px;
+}
+
 .raise:hover,
 .raise:focus {
   box-shadow: 0 0.5em 0.5em -0.4em #3737F4;

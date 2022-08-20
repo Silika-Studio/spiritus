@@ -53,14 +53,14 @@ export const Navbar: React.FC = () => {
                     </HStack>
                 </Link>
                 <HStack spacing="36px">
-                    <ButtonShadow >
+                    <ButtonShadow isLight={!hasBackground}>
                         <Link href="/demo"
                         >
                             <Text fontFamily="Poppins" margin="0px" fontSize="28px" fontWeight="bold">Demo</Text>
                         </Link>
                     </ButtonShadow>
 
-                    <ButtonShadow>
+                    <ButtonShadow isLight={!hasBackground}>
                         <Button onClick={client.connected ? disconnectClient : initClient} fontFamily="Poppins" margin="0px" fontSize="28px" fontWeight="bold"
                             cursor="pointer" border="none"
                             backgroundColor="transparent !important"

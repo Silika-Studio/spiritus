@@ -8,7 +8,7 @@ import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract SpiritusOnChain is ERC721A, Ownable {
+contract SpiritusOffChain is ERC721A, Ownable {
     /// A URI used to reference off-chain metadata.
     // This will use the Tableland gateway: https://testnet.tableland.network/query?mode=list&s=
     string public tokenBaseURI;
@@ -33,7 +33,7 @@ contract SpiritusOnChain is ERC721A, Ownable {
         string memory _mainTable,
         string memory _attributesTable,
         string memory _layersTable
-    ) ERC721A("SpiritusOnChain", "SOC") {
+    ) ERC721A("SpiritusOffChain", "SOC") {
         tokenBaseURI = _tokenBaseURI;
         mainTable = _mainTable;
         attributesTable = _attributesTable;

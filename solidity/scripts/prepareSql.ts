@@ -9,11 +9,19 @@ dotenv.config();
  * @param {string} layersTable The name of the layers table in Tableland (id int, trait_type text, value text, uri text).
  * @returns {{main: string, attributes: string[]}} SQL statements for metadata table writes.
  */
-async function prepareSql(mainTable: string, attributesTable: string) {
+async function prepareSql(
+  mainTable: string,
+  attributesTable: string,
+  layersTable: string
+) {
   // Prepare the metadata (handles all of the IPFS-related actions & JSON parsing).
   const metadata = await prepareMetadata();
   // An array to hold interpolated SQL INSERT statements, using the metadata object's values.
   const sqlInsertStatements = [];
+
+  // Tracking already seen layer ids
+  let trackIds = new Set();
+
   for await (let obj of metadata) {
     // Destructure the metadata values from the passed object
     const { id, name, description, image, attributes } = obj;
@@ -23,11 +31,12 @@ async function prepareSql(mainTable: string, attributesTable: string) {
     // Iterate through the attributes and create an INSERT statment for each value, pushed to `attributesTableStatements`
     const attributesTableStatements = [];
     for await (let attribute of attributes) {
-      // Get the attirbutes trait_type & value;
-      const { trait_type, value } = attribute;
-      // INSERT statement for a separate 'attributes' table that holds attribute data, keyed by the NFT tokenId
-      // Schema: id int, trait_type text, value text
-      const attributesStatement = `INSERT INTO ${attributesTable} (main_id, trait_type, value) VALUES (${id},'${trait_type}', '${value}');`;
+      // Get the attributes metadata;
+      const { trait_type, value, layer_id, layer_uri } = attribute;
+
+      // INSERT statements for separate 'attributes' and `layers` tables that hold attribute data, keyed by the NFT tokenId
+      // Attribute Schema: id int, layer_id int
+      const attributesStatement = `INSERT INTO ${attributesTable} (main_id, layer_id) VALUES (${id},'${layer_id}');`;
       attributesTableStatements.push(attributesStatement);
     }
 
@@ -40,8 +49,16 @@ async function prepareSql(mainTable: string, attributesTable: string) {
     sqlInsertStatements.push(statement);
   }
 
+  const layersStatements = [];
+  const layers = ipfs.lookupjson();
+  for await (let layer of layers) {
+    const { trait_type, value, layer_id, layer_uri } = layer;
+    const layersStatement = `INSERT INTO ${layersTable} (id, trait_type, value, uri) VALUES (${layer_id},'${trait_type}', '${value}', '${layer_uri}');`;
+    layersStatements.push(layersStatement);
+  }
+
   // Return the final prepared array of SQL INSERT statements
-  return sqlInsertStatements;
+  return [sqlInsertStatements, layersStatements];
 }
 
 export = prepareSql;

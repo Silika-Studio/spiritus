@@ -11,3 +11,30 @@ interface FailureResponse {
  */
 export declare type APIResponse<T> = SuccessResponse<T> | FailureResponse;
 export { };
+
+export interface Trait {
+    trait_type: string;
+    value: string;
+}
+export interface TokenUriResponse {
+    name: string;
+    image: string;
+    id: string;
+    image_url: string;
+    attributes: Trait[];
+}
+
+export interface TokenData {
+    assetName: string;
+    imageUrl: string;
+    id: string;
+    attributes: Trait[];
+}
+
+export type CollectionWriteStatus = 'writeable' | 'not-writeable';
+
+export interface Collection {
+    status: CollectionWriteStatus;
+    layersURI: string;
+    // layers
+}

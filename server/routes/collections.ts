@@ -56,6 +56,8 @@ router.post('/collections/:contract/:tokenID', async (
 ) => {
     const { contract } = req.params;
 
+
+
     // Generate new image
     // Save CID and new traits
 

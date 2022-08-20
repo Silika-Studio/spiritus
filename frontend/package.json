@@ -1,0 +1,33 @@
+{
+    "name": "frontend",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@chakra-ui/react": "^1.8.6",
+        "@emotion/react": "^11.10.0",
+        "@emotion/styled": "^11.10.0",
+        "@walletconnect/client": "^1.8.0",
+        "@walletconnect/qrcode-modal": "^1.8.0",
+        "better-sqlite3": "^7.6.2",
+        "framer-motion": "^7.2.0",
+        "keccak256": "^1.0.6",
+        "next": "12.2.5",
+        "react": "18.2.0",
+        "react-dom": "18.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "17.0.21",
+        "@types/react": "18.0.17",
+        "@types/react-scroll": "1.8.2",
+        "@typescript-eslint/parser": "^5.33.1",
+        "eslint": "8.22.0",
+        "eslint-config-next": "12.2.5",
+        "typescript": "4.6.2"
+    }
+}

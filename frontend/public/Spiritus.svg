@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+<!-- <defs>
+          <radialGradient id="smallGradient" fy="90%">
+            <stop offset="0%" stop-color="#f4c708"></stop>
+            <stop offset="100%" stop-color="#f7e69a"></stop>
+            <animate attributeName="fy" dur="700ms" from="90%" to="0%" repeatCount="indefinite"></animate>
+          </radialGradient>
+          <linearGradient id="largeGradient" fy="90%">
+            <stop offset="0%" stop-color="#74B7FF">
+            <animate attributeName="stop-color" values="#74B7FF; #0082F4" dur="3s" repeatCount="indefinite" ></animate>
+            </stop>
+             <stop offset="100%" stop-color="#74B7FF">
+            <animate attributeName="stop-color" values="#74B7FF; #0082F4" dur="3s" repeatCount="indefinite" ></animate>
+            </stop>
+             <stop offset="100%" stop-color="#0082F4"></stop>
+    <animate attributeName="fy" dur="3000ms" from="90%" to="0%" repeatCount="indefinite"></animate>
+          </linearGradient>
+      </defs> -->
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #242829;
+      }
+
+    #cls-2 {
+ fill: #3FD1FF;
+      	<!-- fill: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); -->
+	<!-- background-size: 400% 400%; -->
+	<!-- animation: gradient 15s ease infinite; -->
+      }
+
+      .cls-3 {
+        font-size: 216px;
+      }
+
+      .cls-3, .cls-4 {
+        fill: #fff;
+        font-family: Poppins-Bold, Poppins;
+      }
+
+      .cls-4 {
+        font-size: 64px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1" data-name="Layer 1">
+    <text/>
+  </g>
+  <g id="Layer_2" data-name="Layer 2">
+    <rect  id="cls-2" x="686" y="420.02" width="68" height="337.48"/>
+    <rect class="cls-1" x="1256" y="357.5" width="68" height="337.48"/>
+    <rect class="cls-1" x="591" y="357.5" width="68" height="337.48"/>
+    <rect class="cls-1" x="781" y="357.5" width="68" height="337.48"/>
+    <rect class="cls-1" x="876" y="357.5" width="68" height="337.48"/>
+    <rect class="cls-1" x="1066" y="357.5" width="68" height="337.48"/>
+    <rect class="cls-1" x="1351" y="357.5" width="68" height="337.48"/>
+    <rect class="cls-1" x="971" y="357.5" width="68" height="337.48"/>
+    <rect class="cls-1" x="496" y="357.5" width="68" height="337.48"/>
+    <rect class="cls-1" x="1161" y="357.5" width="68" height="337.48"/>
+  </g>
+  <g id="Layer_3" data-name="Layer 3">
+    <text class="cls-3" transform="translate(539.5, 433.5)"><tspan x="0" y="0">SPIRITUS</tspan></text>
+    <text class="cls-4" transform="translate(772.8 766.87)"><tspan x="0" y="0">The dynamic NFT</tspan><tspan x="0" y="76.8">base layer</tspan></text>
+  </g>
+</svg>

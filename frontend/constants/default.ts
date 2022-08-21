@@ -86,4 +86,5 @@ export enum DEFAULT_POLKADOT_EVENTS { }
 export const DEFAULT_GITHUB_REPO_URL =
     "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
 
-export const SERVER_URL = "http://localhost:3001";
+export const SERVER_URL = "https://api.spiritus.dev";
+// export const SERVER_URL = "http://localhost:3001";

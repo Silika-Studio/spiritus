@@ -26,8 +26,8 @@ const ipfsGatewayUrl = "https://ipfs.moralis.io:2053/ipfs/";
 
 async function loadLayersFromIPFS() {
   const layers: LoadCollectionTraits = {
-    layerHash: "QmZ6mcScDMKiYt49fddbMzFwmfmc6os2a7QsbeJ7ocZP2M",
-    collectionName: "nouns",
+    layerHash: "QmPqF84LGToejXPpfD4TaKQykpUscpyjSvcWsCA7L7aKXh",
+    collectionName: "goodmindsbread",
     traits: {},
   };
 

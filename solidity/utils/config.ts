@@ -1,18 +1,13 @@
 // General metadata for Ethereum
-export let namePrefix = "Spiritus Nouns";
-export let description = "Spiritus Nouns";
+export let namePrefix = "Good Minds";
+export let description = "Good Minds Breads";
 // export let baseUri = "ipfs://baseURI";
 
 export const layerConfigurations = [
   {
     growEditionSizeTo: 5,
-    layersOrder: [
-      { name: "bg" },
-      { name: "body" },
-      { name: "head" },
-      { name: "glasses" },
-      { name: "accessory" },
-    ],
+    // Good minds bread
+    layersOrder: [{ name: "background" }, { name: "body" }, { name: "face" }],
   },
 ];
 

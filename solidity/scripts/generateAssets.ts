@@ -61,12 +61,12 @@ type LoadCollectionTraits = {
 
 const getIPFSElements = async (trait_value: string) => {
   const layers: LoadCollectionTraits = {
-    layerHash: "QmZ6mcScDMKiYt49fddbMzFwmfmc6os2a7QsbeJ7ocZP2M",
-    collectionName: "nouns",
+    layerHash: "QmPqF84LGToejXPpfD4TaKQykpUscpyjSvcWsCA7L7aKXh",
+    collectionName: "goodmindsbread",
     traits: {},
   };
   const ipfsGatewayUrl = "https://ipfs.moralis.io:2053/ipfs/";
-  const rootHash = "QmZKH3RWrXpEc1hqFVZhmPzVdunzD3V7KEhzmyobKdpneA";
+  const rootHash = "QmaXGHvtx4xt18sLGgMqMhM2Nt2E9czMz2xU9dZBRy56Wx";
   const r = await axios.get<UploadCollectionTraits>(
     `${ipfsGatewayUrl}${layers.layerHash}/layers.json`
   );

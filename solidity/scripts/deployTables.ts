@@ -156,26 +156,14 @@ async function main() {
   console.log(
     `\nDecoy contract deployed on ${network.name} at: ${decoy.address}`
   );
-  const baseURI = await decoy.baseURIString();
+  const baseURI = await decoy.tokenBaseURI();
   console.log(`Decoy is using baseURI: ${baseURI}`);
 
-  // For demonstration purposes, mint a token so that `tokenURI` can be called
-  const mintToken = await decoy.mint();
-  const mintTxn = await mintToken.wait();
-  // For demonstration purposes, retrieve the event data from the mint to get the minted `tokenId`
-  const mintReceipient = mintTxn.events[0].args[1];
-  const tokenId = mintTxn.events[0].args[2];
-  console.log(
-    `NFT minted: tokenId '${tokenId.toNumber()}' to owner '${mintReceipient}'`
-  );
-  const tokenURI = await decoy.tokenURI(tokenId);
-  console.log(
-    `\nSee an example of 'tokenURI' using token '${tokenId}' here:\n${tokenURI}`
-  );
   try {
     console.log("\nVerifying contract...");
     await hre.run("verify:verify", {
       address: decoy.address,
+      contract: "contracts/Decoy.sol:Decoy",
       constructorArguments: [
         tablelandBaseURI,
         mainName,
@@ -190,6 +178,20 @@ async function main() {
       );
     }
   }
+
+  // For demonstration purposes, mint a token so that `tokenURI` can be called
+  const mintToken = await decoy.mint();
+  const mintTxn = await mintToken.wait();
+  // For demonstration purposes, retrieve the event data from the mint to get the minted `tokenId`
+  const mintReceipient = mintTxn.events[0].args[1];
+  const tokenId = mintTxn.events[0].args[2];
+  console.log(
+    `NFT minted: tokenId '${tokenId.toNumber()}' to owner '${mintReceipient}'`
+  );
+  const tokenURI = await decoy.tokenURI(tokenId);
+  console.log(
+    `\nSee an example of 'tokenURI' using token '${tokenId}' here:\n${tokenURI}`
+  );
 }
 
 main()

@@ -39,7 +39,7 @@ export async function prepareSql(
 
       // INSERT statements for separate 'attributes' and `layers` tables that hold attribute data, keyed by the NFT tokenId
       // Attribute Schema: id int, layer_id int
-      const attributesStatement = `INSERT INTO ${attributesTable} (main_id, layer_id) VALUES (${id},'${+layer_id}');`;
+      const attributesStatement = `INSERT INTO ${attributesTable} (main_id, layer_id) VALUES (${id},${+layer_id});`;
       attributesTableStatements.push(attributesStatement);
     }
 

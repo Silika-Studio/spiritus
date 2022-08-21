@@ -31,38 +31,27 @@ async function main(
   const tables = await tableland.list();
   console.log(tables);
 
-  // Read all records in the main table
-  const { columns: mc, rows: mr } = await tableland.read(
-    `SELECT * FROM ${mainTable}`
-  );
-  console.log(mc, mr);
-
-  // Read all records in the attributes table
-  const { columns: ac, rows: ar } = await tableland.read(
-    `SELECT * FROM ${attributesTable}`
-  );
-  console.log(ac, ar);
-
-  // Read all records in the layers table
-  const { columns: lc, rows: lr } = await tableland.read(
-    `SELECT * FROM ${layersTable}`
-  );
-  console.log(lc, lr);
-
   const oldLayerId = await tableland.read(
-    `SELECT layer_id FROM ${layersTable} WHERE value = '${oldValue}' AND trait_type = '${traitType}'`
+    `SELECT id FROM ${layersTable} WHERE value = '${oldValue}' AND trait_type = '${traitType}'`
   );
   console.log(oldLayerId);
 
   const { newLayerId, newLayerURI } = await tableland.read(
-    `SELECT layer_id, layer_uri FROM ${layersTable} WHERE value = '${newValue}' AND trait_type = '${traitType}'`
+    `SELECT id, uri FROM ${layersTable} WHERE value = '${newValue}' AND trait_type = '${traitType}'`
   );
   console.log(newLayerId, newLayerURI);
 
-  const updateAttributesTable = await tableland.write(
+  let { hash: attrUpdateTxHash } = await tableland.write(
     `UPDATE ${attributesTable} SET layer_id = ${newLayerId} WHERE main_id = ${id} AND layer_id = ${oldLayerId}`
   );
-  console.log(updateAttributesTable);
+  let receipt = tableland.receipt(attrUpdateTxHash);
+  if (receipt) {
+    console.log(`${attributesTable} table updated`);
+  } else {
+    throw new Error(
+      `Write table error: could not get '${attributesTable}' transaction receipt: ${attrUpdateTxHash}`
+    );
+  }
 
   // TODO Generate new image, pin, and get CID
 

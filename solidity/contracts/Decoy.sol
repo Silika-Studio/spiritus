@@ -31,7 +31,7 @@ contract Decoy is ERC721A, Ownable {
         string memory _mainTable,
         string memory _attributesTable,
         string memory _layersTable
-    ) ERC721A("SpiritusOffChain", "SOC") {
+    ) ERC721A("Decoy", "D") {
         tokenBaseURI = _tokenBaseURI;
         mainTable = _mainTable;
         attributesTable = _attributesTable;
@@ -76,23 +76,44 @@ contract Decoy is ERC721A, Ownable {
         /*
         A SQL query to JOIN three tables to compose the metadata accross a `main`, `attributes`, and `layers` table
         */
+        // string memory query = string.concat(
+        //     "SELECT%20json_object%28%27id%27%2Cid%2C%27name%27%2Cname%2C%27description%27%2Cdescription%2C%27attributes%27%2Cjson_group_array%28json_object%28%27trait_type%27%2Ctrait_type%2C%27value%27%2Cvalue%29%29%29%20FROM%20",
+        //     mainTable,
+        //     "%20JOIN%20",
+        //     attributesTable,
+        //     "%20ON%20",
+        //     mainTable,
+        //     "%2Eid%20%3D%20",
+        //     attributesTable,
+        //     "%2Emain_id"
+        //     "%20JOIN%20",
+        //     layersTable,
+        //     "%20ON%20",
+        //     layersTable,
+        //     "%2Eid%20%3D%20",
+        //     attributesTable,
+        //     "%2Elayer_id%20WHERE%20id%3D"
+        // );
         string memory query = string.concat(
-            "SELECT%20json_object%28%27id%27%2Cid%2C%27name%27%2Cname%2C%27description%27%2Cdescription%2C%27attributes%27%2Cjson_group_array%28json_object%28%27trait_type%27%2Ctrait_type%2C%27value%27%2Cvalue%29%29%29%20FROM%20",
+            "SELECT+json_object%28%27id%27%2C",
             mainTable,
-            "%20JOIN%20",
-            attributesTable,
-            "%20ON%20",
+            ".id%2C%27name%27%2Cname%2C%27image%27%2Cimage%2C%27description%27%2Cdescription%2C%27attributes%27%2Cjson_group_array%28json_object%28%27trait_type%27%2Ctrait_type%2C%27value%27%2Cvalue%29%29%29+FROM+",
             mainTable,
-            "%2Eid%20%3D%20",
+            "+JOIN+",
             attributesTable,
-            "%2Emain_id"
-            "%20JOIN%20",
-            layersTable,
-            "%20ON%20",
-            layersTable,
-            "%2Eid%20%3D%20",
+            "+ON+",
+            mainTable,
+            ".id+%3D+",
             attributesTable,
-            "%2Elayer_id%20WHERE%20id%3D"
+            ".main_id+JOIN+",
+            layersTable,
+            "+ON+",
+            layersTable,
+            ".id+%3D+",
+            attributesTable,
+            ".layer_id+WHERE+",
+            mainTable,
+            ".id%3D"
         );
         // Return the baseURI with a query string, which looks up the token id in a row.
         // `&mode=list` formats into the proper JSON object expected by metadata standards.
@@ -100,10 +121,11 @@ contract Decoy is ERC721A, Ownable {
         return
             string.concat(
                 baseURI,
-                "&mode=list",
                 query,
                 Strings.toString(tokenId),
-                "%20group%20by%20id"
+                "%20group%20by%20",
+                mainTable,
+                ".id"
             );
     }
 }

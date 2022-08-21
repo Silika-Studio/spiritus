@@ -10,11 +10,11 @@ require("@nomiclabs/hardhat-etherscan");
 const { contractAddress } = require("./consts");
 
 async function main() {
-  const SOC = await ethers.getContractFactory("SpiritusOnChain");
+  const Decoy = await ethers.getContractFactory("Decoy");
 
-  const contract = await SOC.attach(contractAddress);
+  const contract = await Decoy.attach(contractAddress);
 
-  const mintToken = await contract.mint();
+  const mintToken = await contract.mint(1);
   const mintTxn = await mintToken.wait();
   const mintReceipient = mintTxn.events[0].args[1];
   const tokenId = mintTxn.events[0].args[2];

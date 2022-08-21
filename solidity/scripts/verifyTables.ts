@@ -10,6 +10,7 @@ const { TablelandTables, contractAddress } = require("./consts");
 async function main() {
   await hre.run("verify:verify", {
     address: contractAddress, // Update with your contract address
+    contract: "contracts/Decoy.sol:Decoy",
     constructorArguments: [
       "https://testnet.tableland.network/query?mode=list&s=",
       TablelandTables.main,

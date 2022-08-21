@@ -10,9 +10,9 @@ export const ConnectWallet = ({ setCurrentStep }: ConnectWalletProps) => {
     const { client, initClient } = useWallet();
 
     useEffect(() => {
-        if (client && client.connected)
-            setCurrentStep('input-contract');
-    }, [client, client.connected]);
+        // if (client && client.connected)
+        setCurrentStep('input-contract');
+    }, [client]);
 
     const connect = () => {
         initClient();

@@ -5,6 +5,8 @@ import Link from "next/link";
 import theme from "../theme/theme";
 
 export default function Home() {
+
+
     // const { client } = useWallet();
     // useEffect(() => {
     //     console.log(client);

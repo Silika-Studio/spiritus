@@ -25,11 +25,12 @@ export const Demo: React.FC = () => {
         console.log(step);
         setCurrentStep(step);
     };
-    return (<Flex marginTop="200px" justifyContent="center" alignItems="center" minH="calc(100vh - 200px)">
-        {stepMap[currentStep] &&
-            React.createElement(stepMap[currentStep], { setCurrentStep: setCurrStepWrapper })
-        }
-    </Flex>);
+    return (
+        <Flex marginTop="200px" justifyContent="center" alignItems="center" minH="calc(100vh - 200px)">
+            {stepMap[currentStep] &&
+                React.createElement(stepMap[currentStep], { setCurrentStep: setCurrStepWrapper })
+            }
+        </Flex>);
 };
 
 export default Demo;

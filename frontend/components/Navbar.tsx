@@ -2,7 +2,7 @@ import { Button, HStack, Image, Stack, Text } from "@chakra-ui/react";
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
-import { useWallet } from "../hooks/useWallet";
+import { useWalletConnectClient } from "../contexts/ClientContext";
 import theme from "../theme/theme";
 import { ButtonShadow } from "./atoms/ButtonShadow";
 
@@ -13,7 +13,22 @@ import { ButtonShadow } from "./atoms/ButtonShadow";
 export const Navbar: React.FC = () => {
     const router = useRouter();
     const [hasBackground, setHasBackground] = useState(false);
-    const { client, address, initClient, disconnectClient } = useWallet();
+
+    const {
+        client,
+        pairings,
+        session,
+        connect,
+        disconnect,
+        chains,
+        accounts,
+        balances,
+        isFetchingBalances,
+        isInitializing,
+        setChains,
+    } = useWalletConnectClient();
+
+
     useEffect(() => {
         if (router.pathname === '/') {
             const onScroll: EventListener = (_event: Event) => {
@@ -61,13 +76,14 @@ export const Navbar: React.FC = () => {
                     </ButtonShadow>
 
                     <ButtonShadow isLight={!hasBackground}>
-                        <Button onClick={client.connected ? disconnectClient : initClient} fontFamily="Poppins" margin="0px" fontSize="28px" fontWeight="bold"
+                        <Button onClick={accounts.length ? disconnect : () => connect()} fontFamily="Poppins" margin="0px" fontSize="28px" fontWeight="bold"
                             cursor="pointer" border="none"
                             backgroundColor="transparent !important"
                             color={hasBackground ? theme.colours.darkBlue : theme.colours.textLight}
                         >
-                            {client.connected ?
-                                `${address.slice(0, 5)}...${address.slice(address.length - 4)}` : 'Connect'
+                            {accounts.length ?
+                                `${accounts[0].slice(0, 5)}...${accounts[0].slice(accounts[0].length - 4)}` :
+                                'Connect'
                             }
                         </Button>
                     </ButtonShadow>

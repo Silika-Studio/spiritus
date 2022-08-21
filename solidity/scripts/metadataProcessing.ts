@@ -4,7 +4,11 @@ const mime = require("mime");
 const fs = require("fs");
 const path = require("path");
 const dotenv = require("dotenv");
+const basePath = process.cwd();
+const buildDir = `${basePath}/build`;
 dotenv.config();
+
+import { createNFT } from "./generateAssets";
 
 // The NFT.Storage API token, passed to `NFTStorage` function as a `token`
 const nftStorageApiKey = process.env.NFT_STORAGE_API_KEY;
@@ -28,7 +32,7 @@ async function fileFromPath(filePath: string) {
  */
 async function uploadImageToIpfs(id: number, imagesDirPath: string) {
   // Find & load the file from disk
-  const imagePath = path.join(imagesDirPath, `${id}.jpeg`);
+  const imagePath = path.join(imagesDirPath, `${id}.png`);
   const image = await fileFromPath(imagePath);
   // Upload to IPFS using NFT Storage
   const storage = new NFTStorage({ token: nftStorageApiKey });
@@ -36,8 +40,6 @@ async function uploadImageToIpfs(id: number, imagesDirPath: string) {
   // Return the image's CID
   return imageCid;
 }
-
-// metadataProcessing.js
 
 /**
  * Update the existing metadata file, changing the 'image' to the `{imageCid}` interpolated in the NFT.Storage gateway URL.
@@ -54,12 +56,12 @@ async function parseMetadataFile(
   // Retrieve CID from uploaded image file
   const imageCid = await uploadImageToIpfs(id, imagesDirPath);
   // Find the corresponding metadata file (matching `id`)
-  const metadataFilePath = path.join(metadataDirPath, `${id}`);
+  const metadataFilePath = path.join(metadataDirPath, `${id}.json`);
   let metadataFile;
   try {
     metadataFile = await fs.promises.readFile(metadataFilePath);
   } catch (error) {
-    console.error(`Error reading file in metadata directory: ${id}`);
+    console.error(`Error reading file in metadata directory: ${id}.json`);
   }
   // Parse metatadata buffer (from 'readFile') to an object
   const metadataJson = JSON.parse(metadataFile.toString());
@@ -72,7 +74,7 @@ async function parseMetadataFile(
   try {
     await fs.promises.writeFile(metadataFilePath, metadataFileBuffer);
   } catch (error) {
-    console.error(`Error writing file in metadata directory: ${id}`);
+    console.error(`Error writing file in metadata directory: ${id}.json`);
   }
 
   // Return metadata as an object
@@ -84,18 +86,19 @@ async function parseMetadataFile(
  * @returns {Array<Object>} Metadata files parsed to objects, including the overwritten `image` with a CID.
  */
 async function prepareMetadata() {
+  await createNFT(1);
   // An array that contains all metadata objects
   const finalMetadata = [];
   // Set the `metadata` & `images` directory path, holding the metadata files & images
-  const metadataDirPath = path.join(__dirname, "..", "metadata");
-  const imagesDirPath = path.join(__dirname, "..", "images");
+  const metadataDirPath = `${buildDir}/metadata`;
+  const imagesDirPath = `${buildDir}/images`;
   // Retrieve the updated files -- pass the metadata directory and strip off the `metadata` prefix, leaving only the file name
   const metadataFiles = await getFilesFromPath(metadataDirPath, {
     pathPrefix: path.resolve(metadataDirPath),
   });
-  for await (const file of metadataFiles) {
+  for (const file of metadataFiles) {
     // Strip the leading `/` from the file's `name`, which is
-    let id = file.name.replace(/^\//, "");
+    let id = file.name.replace(/\.[^/.]+$/, "");
     try {
       // Retrieve the metadata files as an object, parsed from the metadata files
       let metadataObj = await parseMetadataFile(
@@ -103,8 +106,7 @@ async function prepareMetadata() {
         metadataDirPath,
         imagesDirPath
       );
-      // Add a new field called `id`, which will be used during INSERTs as a unique row `id`
-      metadataObj.id = Number(id);
+      console.log(`Successfully pinned image to ${metadataObj.image}`);
       finalMetadata.push(await metadataObj);
     } catch (error) {
       console.error(`Error parsing metadata file: ${id}`);

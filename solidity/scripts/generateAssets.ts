@@ -1,5 +1,13 @@
 import type { Attribute, Metadata, Layer } from "./types";
-type LoadedImage = ReturnType<typeof loadLayerImg>;
+const { NFTStorage, File } = require("nft.storage");
+const dotenv = require("dotenv");
+const path = require("path");
+const { getFilesFromPath } = require("files-from-path");
+const mime = require("mime");
+dotenv.config();
+
+// The NFT.Storage API token, passed to `NFTStorage` function as a `token`
+const nftStorageApiKey = process.env.NFT_STORAGE_API_KEY;
 
 const basePath = process.cwd();
 
@@ -7,17 +15,11 @@ const fs = require("fs");
 const sha1 = require("sha1");
 const { createCanvas, loadImage } = require("canvas");
 const buildDir = `${basePath}/build`;
-const layersDir = `${basePath}/layers`;
 import axios from "axios";
 const {
   format,
-  baseUri,
   description,
-  background,
-  uniqueDNATolerance,
   layerConfigurations,
-  rarityDelimiter,
-  debugLogs,
   namePrefix,
 } = require(`${basePath}/utils/config.ts`);
 const canvas = createCanvas(format.width, format.height);
@@ -28,56 +30,10 @@ let attributesList: Attribute[] = [];
 let dnaList = new Set();
 const DNA_DELIMITER = "#";
 
-const buildSetup = () => {
-  if (fs.existsSync(buildDir)) {
-    fs.rmdirSync(buildDir, { recursive: true });
-  }
-  fs.mkdirSync(buildDir);
-  fs.mkdirSync(`${buildDir}/json`);
-  fs.mkdirSync(`${buildDir}/images`);
-};
-
-const getRarityWeight = (layerName: string) => {
-  let nameWithoutExtension = layerName.split(".")[0];
-  let nameWithoutWeight = Number(
-    nameWithoutExtension.split(rarityDelimiter).pop()
-  );
-  if (isNaN(nameWithoutWeight)) {
-    nameWithoutWeight = 1;
-  }
-  return nameWithoutWeight;
-};
-
 const cleanDna = (_str: string) => {
   const withoutOptions = removeQueryStrings(_str);
   let dna = Number(withoutOptions.split(":").shift());
   return dna;
-};
-
-const cleanName = (_str: string) => {
-  let nameWithoutExtension = _str.slice(0, -4);
-  let nameWithoutWeight = nameWithoutExtension.split(rarityDelimiter).shift();
-  return nameWithoutWeight;
-};
-
-const getElements = (path: string) => {
-  return fs
-    .readdirSync(path)
-    .filter((item: any) => !/(^|\/)\.[^\/\.]/g.test(item))
-    .map((layer: string, index: number) => {
-      if (layer.includes("-")) {
-        throw new Error(
-          `layer name can not contain dashes, please fix: ${layer}`
-        );
-      }
-      return {
-        id: index,
-        name: cleanName(layer),
-        filename: layer,
-        path: `${path}${layer}`,
-        weight: getRarityWeight(layer),
-      };
-    });
 };
 
 interface UploadTraitType {
@@ -160,15 +116,34 @@ const saveImage = (editionCount: number) => {
   );
 };
 
+/**
+ * Helper to retrieve a single file from some path.
+ * @param {string} filePath The path of a file to retrieve.
+ * @returns {File} A fs File at the specified file path.
+ */
+async function fileFromPath(filePath: string) {
+  const content = await fs.promises.readFile(filePath);
+  const type = mime.getType(filePath);
+  return new File([content], path.basename(filePath), { type });
+}
+
+const pinImageToIPFS = async (editionCount: number) => {
+  const imagePath = `${buildDir}/images/${editionCount}.png`;
+  const image = await fileFromPath(imagePath);
+  // Upload to IPFS using NFT Storage
+  const storage = new NFTStorage({ token: nftStorageApiKey });
+  const imageCid = await storage.storeBlob(image);
+  // Return the image's CID
+  return imageCid;
+};
+
 const addMetadata = (_dna: string, _edition: number) => {
-  let dateTime = Date.now();
   let tempMetadata: Metadata = {
+    id: _edition,
     name: `${namePrefix} #${_edition}`,
     description: description,
-    image: `${baseUri}/${_edition}.png`,
-    dna: sha1(_dna),
-    edition: _edition,
-    date: dateTime,
+    image: "",
+    hash: sha1(_dna),
     attributes: attributesList,
   };
 
@@ -185,7 +160,6 @@ const addAttributes = (_element: any) => {
 };
 
 const loadLayerImg = async (_layer: LayerWithDNA) => {
-  console.log(`${_layer.selectedElement.path}`);
   try {
     return new Promise(async (resolve) => {
       const image = await loadImage(`${_layer.selectedElement.path}`);
@@ -296,26 +270,20 @@ const createDna = (_layers: any) => {
   return randNum.join(DNA_DELIMITER);
 };
 
-const writeMetaData = (jsonData: string) => {
-  fs.writeFileSync(`${buildDir}/json/_metadata.json`, jsonData);
-};
-
-const saveMetaDataSingleFile = (editionCount: number) => {
-  let metadata = metadataList.find(
-    (meta: Metadata) => meta.edition == editionCount
-  );
-  debugLogs
+const saveMetaDataSingleFile = (editionCount: number, debug = false) => {
+  let metadata = metadataList.find((meta: Metadata) => meta.id == editionCount);
+  debug
     ? console.log(
         `Writing metadata for ${editionCount}: ${JSON.stringify(metadata)}`
       )
     : null;
   fs.writeFileSync(
-    `${buildDir}/json/${editionCount}.json`,
+    `${buildDir}/metadata/${editionCount}.json`,
     JSON.stringify(metadata, null, 2)
   );
 };
 
-const createNFT = async (
+export const createNFT = async (
   editionSize: number,
   debug: boolean = false,
   dnaTolerance: number = 10000
@@ -324,12 +292,11 @@ const createNFT = async (
   let editionCount = 1;
   let failedCount = 0;
   let editionInd: number[] = [];
-  for (let i = 1; i <= editionSize; i++) {
+  for (let i = 0; i < editionSize; i++) {
     editionInd.push(i);
   }
   debug ? console.log("Editions left to create: ", editionInd) : null;
   while (layerConfigIndex < layerConfigurations.length) {
-    // TODO Change layersSetup to parse given folder like in Rust engine
     const layers = await layersSetup(
       layerConfigurations[layerConfigIndex].layersOrder
     );
@@ -337,10 +304,9 @@ const createNFT = async (
 
     while (editionCount <= editionSize) {
       let newDna = createDna(layerValues);
-      console.log(newDna);
       if (isDnaUnique(dnaList, newDna)) {
         let results: LayerWithDNA[] = constructLayerToDna(newDna, layerValues);
-        let loadedElements: LoadedImage[] = [];
+        let loadedElements: any[] = [];
 
         results.forEach((layer: LayerWithDNA) => {
           loadedElements.push(loadLayerImg(layer));
@@ -355,7 +321,7 @@ const createNFT = async (
           debug ? console.log("Editions left to create: ", editionInd) : null;
           saveImage(editionInd[0]);
           addMetadata(newDna, editionInd[0]);
-          saveMetaDataSingleFile(editionInd[0]);
+          saveMetaDataSingleFile(editionInd[0], debug);
           console.log(
             `Created edition: ${editionInd[0]}, with DNA: ${sha1(newDna)}`
           );
@@ -374,24 +340,4 @@ const createNFT = async (
     }
     layerConfigIndex++;
   }
-  writeMetaData(JSON.stringify(metadataList, null, 2));
 };
-
-createNFT(5, true);
-
-// layersSetup([
-//   { name: "bg" },
-//   { name: "body" },
-//   { name: "head" },
-//   { name: "glasses" },
-//   { name: "accessory" },
-// ]);
-// layersSetup([
-//   { name: "Background" },
-//   { name: "Eyeball" },
-//   { name: "Eye color" },
-//   { name: "Iris" },
-//   { name: "Shine" },
-//   { name: "Bottom lid" },
-//   { name: "Top lid" },
-// ]);

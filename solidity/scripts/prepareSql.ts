@@ -1,5 +1,5 @@
 const prepareMetadata = require("./metadataProcessing");
-const loadAllLayers = require("./loadAllLayers");
+const loadLayersFromIPFS = require("./loadLayersFromIPFS");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -10,7 +10,7 @@ dotenv.config();
  * @param {string} layersTable The name of the layers table in Tableland (id int, trait_type text, value text, uri text).
  * @returns {{main: string, attributes: string[]}} SQL statements for metadata table writes.
  */
-async function prepareSql(
+export async function prepareSql(
   mainTable: string,
   attributesTable: string,
   layersTable: string
@@ -20,24 +20,26 @@ async function prepareSql(
   // An array to hold interpolated SQL INSERT statements, using the metadata object's values.
   const sqlInsertStatements = [];
 
-  // Tracking already seen layer ids
-  let trackIds = new Set();
+  const layers = await loadLayersFromIPFS();
 
   for await (let obj of metadata) {
     // Destructure the metadata values from the passed object
-    const { id, name, description, image, attributes } = obj;
+    const { id, name, description, image, hash, attributes } = obj;
     // INSERT statement for a 'main' table that includes some shared data across any NFT
     // Schema: id int, name text, description text, image text
-    let mainTableStatement = `INSERT INTO ${mainTable} (id, name, description, image) VALUES (${id}, '${name}', '${description}', '${image}');`;
+    let mainTableStatement = `INSERT INTO ${mainTable} (id, name, description, image, hash) VALUES (${id}, '${name}', '${description}', '${image}', '${hash}');`;
     // Iterate through the attributes and create an INSERT statment for each value, pushed to `attributesTableStatements`
     const attributesTableStatements = [];
     for await (let attribute of attributes) {
       // Get the attributes metadata;
-      const { trait_type, value, layer_id, layer_uri } = attribute;
+      const { trait_type, value } = attribute;
+      const layer_id = layers.findIndex(
+        (x: any) => x.trait_type === trait_type && x.value === value
+      );
 
       // INSERT statements for separate 'attributes' and `layers` tables that hold attribute data, keyed by the NFT tokenId
       // Attribute Schema: id int, layer_id int
-      const attributesStatement = `INSERT INTO ${attributesTable} (main_id, layer_id) VALUES (${id},'${layer_id}');`;
+      const attributesStatement = `INSERT INTO ${attributesTable} (main_id, layer_id) VALUES (${id},'${+layer_id}');`;
       attributesTableStatements.push(attributesStatement);
     }
 
@@ -51,15 +53,14 @@ async function prepareSql(
   }
 
   const layersStatements = [];
-  const layers = loadAllLayers();
-  for await (let layer of layers) {
-    const { trait_type, value, id, uri } = layer;
+
+  for (let i = 0; i < layers.length; i++) {
+    const layer = layers[i];
+    const { id, trait_type, value, uri } = layer;
     const layersStatement = `INSERT INTO ${layersTable} (id, trait_type, value, uri) VALUES (${id},'${trait_type}', '${value}', '${uri}');`;
     layersStatements.push(layersStatement);
   }
 
-  // Return the final prepared array of SQL INSERT statements
+  // Return the final prepared arrays of SQL INSERT statements
   return [sqlInsertStatements, layersStatements];
 }
-
-export = prepareSql;

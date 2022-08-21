@@ -21,7 +21,7 @@ async function main() {
   const tableland = await connect({ signer, chain: "polygon-mumbai" });
   // Define the 'main' table's schema as well as the 'attributes' table; a primary key should exist
   // Recall that declaring a primary key must have a unique combination of values in its primary key columns
-  const mainSchema = `id int primary key, name text, description text, image text`;
+  const mainSchema = `id int primary key, name text, description text, image text, hash text`;
   // Should have one `main` row (a token) to many `attributes`, so no need to introduce a primary key constraint
   const attributesSchema = `main_id int not null, layer_id int not null`;
   // Holds the attribute data and related uri for the layer
@@ -94,6 +94,7 @@ async function main() {
     attributesName,
     layersName
   );
+
   // Insert metadata into the 'main', 'attributes', and `layers`tables, before smart contract deployment
   console.log(`\nWriting metadata to tables...`);
   for await (let statement of sqlInsertStatements) {
@@ -140,26 +141,26 @@ async function main() {
   // Note that `mode=list` will format the metadata per the ERC721 standard
   const tablelandBaseURI = `https://testnet.tableland.network/query?mode=list&s=`;
   // Get the contract factory to create an instance of the TwoTablesNFT contract
-  const SOC = await ethers.getContractFactory("SpiritusOffChain");
+  const Decoy = await ethers.getContractFactory("Decoy");
   // Deploy the contract, passing `tablelandBaseURI` in the constructor's `baseURI` and using the Tableland gateway
   // Also, pass the table's `name` to write to storage in the smart contract
-  const soc = await SOC.deploy(
+  const decoy = await Decoy.deploy(
     tablelandBaseURI,
     mainName,
     attributesName,
     layersName
   );
-  await soc.deployed();
+  await decoy.deployed();
 
   // Log the deployed address and call the getter on `baseURIString` (for demonstration purposes)
   console.log(
-    `\nSpiritusOffChain contract deployed on ${network.name} at: ${soc.address}`
+    `\nDecoy contract deployed on ${network.name} at: ${decoy.address}`
   );
-  const baseURI = await soc.baseURIString();
-  console.log(`SpiritusOffChain is using baseURI: ${baseURI}`);
+  const baseURI = await decoy.baseURIString();
+  console.log(`Decoy is using baseURI: ${baseURI}`);
 
   // For demonstration purposes, mint a token so that `tokenURI` can be called
-  const mintToken = await soc.mint();
+  const mintToken = await decoy.mint();
   const mintTxn = await mintToken.wait();
   // For demonstration purposes, retrieve the event data from the mint to get the minted `tokenId`
   const mintReceipient = mintTxn.events[0].args[1];
@@ -167,14 +168,14 @@ async function main() {
   console.log(
     `NFT minted: tokenId '${tokenId.toNumber()}' to owner '${mintReceipient}'`
   );
-  const tokenURI = await soc.tokenURI(tokenId);
+  const tokenURI = await decoy.tokenURI(tokenId);
   console.log(
     `\nSee an example of 'tokenURI' using token '${tokenId}' here:\n${tokenURI}`
   );
   try {
     console.log("\nVerifying contract...");
     await hre.run("verify:verify", {
-      address: soc.address,
+      address: decoy.address,
       constructorArguments: [
         tablelandBaseURI,
         mainName,
@@ -185,7 +186,7 @@ async function main() {
   } catch (err: any) {
     if (err.message.includes("Reason: Already Verified")) {
       console.log(
-        `Contract is already verified! Check it out on Polygonscan: https://mumbai.polygonscan.com/address/${soc.address}`
+        `Contract is already verified! Check it out on Polygonscan: https://mumbai.polygonscan.com/address/${decoy.address}`
       );
     }
   }

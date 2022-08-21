@@ -18,11 +18,11 @@ export interface Element {
 }
 
 export interface Metadata {
+  id: number;
   name: string;
   description: string;
   image: string;
-  dna?: string;
-  edition: number;
+  hash?: string;
   date?: number;
   attributes: Attribute[] | Attribute[][];
 }

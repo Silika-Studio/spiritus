@@ -2,9 +2,7 @@ import { ethers } from "ethers";
 import { Interface } from "ethers/lib/utils";
 
 import fs from "fs";
-import mime from "mime";
 import { File, NFTStorage } from "nft.storage";
-import path from "path";
 import retry = require("async-retry");
 // The NFT.Storage API token, passed to `NFTStorage` function as a `token`
 const nftStorageApiKey = process.env.NFT_STORAGE_API_KEY;
@@ -140,12 +138,7 @@ export const generateImage = async (traits: Trait[], layerMap: LayerMap) => {
 
     const img = fs.readFileSync(`./bin/${now}.png`, { encoding: "base64" });
 
-    async function fileFromPath(filePath: string) {
-        const content = await fs.promises.readFile(filePath);
-        const type = mime.getType(filePath);
-        return new File([content], path.basename(filePath), { type: type ?? undefined });
-    }
-    const image = await fileFromPath(img);
+    const image = new File([img], 'img.png');
     // Upload to IPFS using NFT Storage
     const storage = new NFTStorage({ token: nftStorageApiKey! });
     const imageCid = await storage.storeBlob(image);

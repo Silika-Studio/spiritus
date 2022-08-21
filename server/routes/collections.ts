@@ -1,10 +1,32 @@
-import express, { Request, Response as ExpressResponse } from 'express';
+import express, { NextFunction, Request, Response as ExpressResponse } from 'express';
+import { collectionsCache } from '../cache';
 import { checkLayersURIInABI, getLayersURI } from '../services/collection';
 import { getTokenMetadata } from '../services/nft';
+import { generateImage, loadAllLayers } from '../services/utils';
 import { supportedCollections } from '../supportedCollections';
-import { APIResponse, Collection, TokenData } from '../types';
+import { APIResponse, Collection, TokenData, Trait } from '../types';
 
 export const router = express.Router();
+
+const checkCollection = async (req: Request, res: ExpressResponse, next: NextFunction) => {
+    const contract = req.params.contract;
+
+    console.log('checking!');
+    if (!contract || !supportedCollections[contract]) {
+        return res.status(404).json({ success: false, data: "Collection not found" });
+
+    }
+
+    if (!collectionsCache[contract]) {
+        collectionsCache[contract] = await loadAllLayers(supportedCollections[contract].layersURI);
+    }
+
+    next();
+};
+
+
+router.use('/collections/:contract', checkCollection);
+
 
 interface GetCollectionPathParams {
     contract: string;
@@ -22,8 +44,6 @@ router.get('/collections/:contract', async (
 ) => {
     const { contract } = req.params;
 
-    if (!contract || !supportedCollections[contract])
-        return res.status(404).json({ success: false, data: "Collection not found" });
 
     let layersURI = '';
 
@@ -38,17 +58,31 @@ router.get('/collections/:contract', async (
         }
     }
 
+
+
     return res.json({ success: true, data: { ...supportedCollections[contract], layersURI } });
 });
 
+interface GetGenerateQueryParams {
+    traits: string;
+}
+
 
 router.get('/collections/:contract/generate', async (
-    req: Request<GetCollectionPathParams, {}, {}, GetQueryParams>,
-    res: ExpressResponse<GetResponse>,
+    req: Request<GetCollectionPathParams, {}, {}, GetGenerateQueryParams>,
+    res: ExpressResponse<APIResponse<string>>,
 ) => {
     const { contract } = req.params;
+    const { traits } = req.query;
+    const traitsParsed: Trait[] = JSON.parse(traits);
+    console.log(traits);
 
-    return res.json({ success: true, data: 'success for ' + contract });
+    if (!collectionsCache[contract])
+        return res.status(400).json({ success: false, data: 'Collection still initialising' });
+
+    const url = await generateImage(traitsParsed, collectionsCache[contract]);
+
+    return res.json({ success: true, data: url });
 });
 
 

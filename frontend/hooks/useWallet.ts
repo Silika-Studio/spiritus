@@ -3,8 +3,14 @@ import React, { useContext } from 'react';
 
 export const WalletContext = React.createContext<{
     client: WalletConnect;
+    address: string;
+    initClient: () => void;
+    disconnectClient: () => void;
 }>({
     client: {} as any,
+    address: '',
+    initClient: () => { },
+    disconnectClient: () => { }
 
 });
 

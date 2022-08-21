@@ -1,23 +1,35 @@
 import { Button } from "@chakra-ui/react";
 import { useEffect } from "react";
-import { useWallet } from "../../hooks/useWallet";
+import { useWalletConnectClient } from "../../contexts/ClientContext";
 import { StepProps } from "../../types";
 
 interface ConnectWalletProps extends StepProps {
 }
 
 export const ConnectWallet = ({ setCurrentStep }: ConnectWalletProps) => {
-    const { client, initClient } = useWallet();
+    const {
+        client,
+        pairings,
+        session,
+        connect,
+        disconnect,
+        chains,
+        accounts,
+        balances,
+        isFetchingBalances,
+        isInitializing,
+        setChains,
+    } = useWalletConnectClient();
 
     useEffect(() => {
-        // if (client && client.connected)
-        setCurrentStep('input-contract');
-    }, [client]);
+        if (accounts.length)
+            setCurrentStep('input-contract');
+    }, [accounts]);
 
-    const connect = () => {
-        initClient();
+    const init = () => {
+        connect();
     };
-    return <Button onClick={connect}>
+    return <Button onClick={init}>
         Connect
     </Button>;
 };

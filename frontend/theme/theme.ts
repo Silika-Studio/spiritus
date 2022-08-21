@@ -13,7 +13,8 @@ export const theme = extendTheme({
         textDark: "#000000",
         textLight: "#eeeeee",
         textDarkLight: "#555555",
-        darkBlue: "#000074"
+        darkBlue: "#000074",
+        blue: "#3737F4"
     }
 
 });

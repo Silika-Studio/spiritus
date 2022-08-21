@@ -40,6 +40,7 @@ interface IContext {
     isFetchingBalances: boolean;
     setChains: any;
 }
+const defaultChains = ['eip155:8001'];
 
 /**
  * Context
@@ -122,6 +123,7 @@ export function ClientContextProvider({
             console.log("connect, pairing topic is:", pairing?.topic);
             try {
                 const requiredNamespaces = getRequiredNamespaces(chains);
+                console.log(chains);
                 console.log(
                     "requiredNamespaces config for connect:",
                     requiredNamespaces

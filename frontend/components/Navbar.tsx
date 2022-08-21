@@ -46,6 +46,8 @@ export const Navbar: React.FC = () => {
         setHasBackground(router.pathname !== '/');
     }, [router.pathname]);
 
+    const account = accounts.length ? accounts[0].split(':')[2] : undefined;
+    console.log(account);
     return (
         <Stack zIndex="1000" position="fixed" top="0px" left="0px" h="200px" w="100vw" >
             <HStack h="144px" justifyContent="space-between" blur="8px" paddingX="48px"
@@ -81,8 +83,8 @@ export const Navbar: React.FC = () => {
                             backgroundColor="transparent !important"
                             color={hasBackground ? theme.colours.darkBlue : theme.colours.textLight}
                         >
-                            {accounts.length ?
-                                `${accounts[0].slice(0, 5)}...${accounts[0].slice(accounts[0].length - 4)}` :
+                            {account ?
+                                `${account.slice(0, 5)}...${account.slice(account.length - 4)}` :
                                 'Connect'
                             }
                         </Button>

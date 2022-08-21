@@ -21,7 +21,7 @@ export const InputContract = ({ setCurrentStep }: InputContractProps) => {
         const res = await getContract(value);
         setIsSearching(false);
         setCollection(res);
-        setCurrentStep(!res.isSupported ? 'input-layersURI' : 'edit-metadata');
+        setCurrentStep(!res.isWriteable ? 'input-layersURI' : 'edit-metadata');
     };
     return <VStack color={theme.colours.blueDark} fontSize="24px" alignItems="start">
         <Text>Please input a contract address</Text>
@@ -40,6 +40,13 @@ export const InputContract = ({ setCurrentStep }: InputContractProps) => {
                         h="72px"
                         color={theme.colours.darkBlue}
                         border={`4px solid ${theme.colours.darkBlue}`}
+                        borderColor={theme.colours.darkBlue}
+                        _hover={{
+                            borderColor: theme.colours.blue
+                        }}
+                        _active={{
+                            borderColor: theme.colours.blue
+                        }}
                         paddingX="12px"
                     />
                     <Button
@@ -50,9 +57,9 @@ export const InputContract = ({ setCurrentStep }: InputContractProps) => {
                         fontSize="32px"
                         cursor="pointer"
                         // background={theme.colours.darkBlue}
-                        background="none"
                         color={theme.colours.darkBlue}
                         border={`4px solid ${theme.colours.darkBlue}`}
+                        backgroundColor="transparent !important"
                         // border="none"
                         paddingX="24px"
                         transition="0.25s"

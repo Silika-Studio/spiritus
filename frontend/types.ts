@@ -5,7 +5,7 @@ export type UploadCollectionTraits = {
     traits: Record<string, UploadTraitType[]>;
 };
 
-export type Step = 'connect' | 'input-contract' | 'input-layersURI' | 'edit-metadata';
+export type Step = 'connect' | 'sign' | 'input-contract' | 'input-layersURI' | 'edit-metadata';
 
 
 export interface StepProps {
@@ -16,7 +16,7 @@ export interface StepProps {
 export interface Collection {
     layersURI: string;
     contractAddress: string;
-    isSupported: boolean;
+    isWriteable: boolean;
 }
 
 export interface NFT {

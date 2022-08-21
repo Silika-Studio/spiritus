@@ -2,10 +2,29 @@ import { Button, HStack, Image, Stack, Text, VStack } from "@chakra-ui/react";
 // import client from "@walletconnect/sign-client";
 import Head from 'next/head';
 import Link from "next/link";
+import { useEffect } from "react";
+import { useWalletConnectClient } from "../contexts/ClientContext";
 import theme from "../theme/theme";
 
 export default function Home() {
+    const {
+        client,
+        pairings,
+        session,
+        connect,
+        disconnect,
+        chains,
+        accounts,
+        balances,
+        isFetchingBalances,
+        isInitializing,
+        setChains,
+    } = useWalletConnectClient();
 
+    // useEffect(() => { disconnect(); }, []);
+    useEffect(() => {
+        setChains(["eip155:80001", "eip155:1"]);
+    }, [accounts]);
 
     // const { client } = useWallet();
     // useEffect(() => {

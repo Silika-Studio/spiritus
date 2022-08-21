@@ -5,7 +5,6 @@ import fs from "fs";
 import { File, NFTStorage } from "nft.storage";
 import retry = require("async-retry");
 // The NFT.Storage API token, passed to `NFTStorage` function as a `token`
-const nftStorageApiKey = process.env.NFT_STORAGE_API_KEY;
 
 export const NOUNS_CONTRACT_ADDRESS =
     "0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03";
@@ -140,8 +139,8 @@ export const generateImage = async (traits: Trait[], layerMap: LayerMap) => {
 
     const image = new File([img], 'img.png');
     // Upload to IPFS using NFT Storage
-    console.log(nftStorageApiKey);
-    const storage = new NFTStorage({ token: nftStorageApiKey! });
+    console.log(process.env.NFT_STORAGE_API_KEY);
+    const storage = new NFTStorage({ token: process.env.NFT_STORAGE_API_KEY! });
     const imageCid = await storage.storeBlob(image);
 
     const uri = `https://${imageCid}.ipfs.nftstorage.link/`;

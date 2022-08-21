@@ -140,6 +140,7 @@ export const generateImage = async (traits: Trait[], layerMap: LayerMap) => {
 
     const image = new File([img], 'img.png');
     // Upload to IPFS using NFT Storage
+    console.log(nftStorageApiKey);
     const storage = new NFTStorage({ token: nftStorageApiKey! });
     const imageCid = await storage.storeBlob(image);
 

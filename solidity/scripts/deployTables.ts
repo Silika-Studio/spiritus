@@ -141,52 +141,33 @@ async function main() {
   // Note that `mode=list` will format the metadata per the ERC721 standard
   const tablelandBaseURI = `https://testnet.tableland.network/query?mode=list&s=`;
   // Get the contract factory to create an instance of the TwoTablesNFT contract
-  const Decoy = await ethers.getContractFactory("Decoy");
+  const Spiritus = await ethers.getContractFactory("Spiritus");
   // Deploy the contract, passing `tablelandBaseURI` in the constructor's `baseURI` and using the Tableland gateway
   // Also, pass the table's `name` to write to storage in the smart contract
-  const decoy = await Decoy.deploy(mainName, attributesName, layersName);
-  await decoy.deployed();
+  const sp = await Spiritus.deploy(mainName, attributesName, layersName);
+  await sp.deployed();
 
   // Log the deployed address and call the getter on `baseURIString` (for demonstration purposes)
   console.log(
-    `\nDecoy contract deployed on ${network.name} at: ${decoy.address}`
+    `\nSpiritus contract deployed on ${network.name} at: ${sp.address}`
   );
-  const baseURI = await decoy.tokenBaseURI();
-  console.log(`Decoy is using baseURI: ${baseURI}`);
+  const baseURI = await sp.tokenBaseURI();
+  console.log(`Spiritus is using baseURI: ${baseURI}`);
 
   try {
     console.log("\nVerifying contract...");
     await hre.run("verify:verify", {
-      address: decoy.address,
-      contract: "contracts/Decoy.sol:Decoy",
-      constructorArguments: [
-        tablelandBaseURI,
-        mainName,
-        attributesName,
-        layersName,
-      ],
+      address: sp.address,
+      contract: "contracts/Spiritus.sol:Spiritus",
+      constructorArguments: [mainName, attributesName, layersName],
     });
   } catch (err: any) {
     if (err.message.includes("Reason: Already Verified")) {
       console.log(
-        `Contract is already verified! Check it out on Polygonscan: https://mumbai.polygonscan.com/address/${decoy.address}`
+        `Contract is already verified! Check it out on Polygonscan: https://mumbai.polygonscan.com/address/${sp.address}`
       );
     }
   }
-
-  // For demonstration purposes, mint a token so that `tokenURI` can be called
-  const mintToken = await decoy.mint();
-  const mintTxn = await mintToken.wait();
-  // For demonstration purposes, retrieve the event data from the mint to get the minted `tokenId`
-  const mintReceipient = mintTxn.events[0].args[1];
-  const tokenId = mintTxn.events[0].args[2];
-  console.log(
-    `NFT minted: tokenId '${tokenId.toNumber()}' to owner '${mintReceipient}'`
-  );
-  const tokenURI = await decoy.tokenURI(tokenId);
-  console.log(
-    `\nSee an example of 'tokenURI' using token '${tokenId}' here:\n${tokenURI}`
-  );
 }
 
 main()

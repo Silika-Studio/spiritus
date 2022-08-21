@@ -38,13 +38,6 @@ async function main() {
   );
   console.log("Layers Table");
   console.log(lc, lr);
-
-  const { columns: jc, rows: jr } = await tableland.read(
-    `SELECT json_object('id',spiritus_main_80001_1045.id,'name',name,'image',image,'description',description,'attributes',json_group_array(json_object('trait_type',trait_type,'value',value))) FROM spiritus_main_80001_1045 JOIN spiritus_attributes_80001_1046 ON spiritus_main_80001_1045.id = spiritus_attributes_80001_1046.main_id JOIN spiritus_layers_80001_1047 ON spiritus_layers_80001_1047.id = spiritus_attributes_80001_1046.layer_id WHERE spiritus_main_80001_1045.id=0 group by spiritus_main_80001_1045.id`
-  );
-  console.log("Joined Table");
-  console.log(jc, jr);
-  console.log(jr[0][0].attributes);
 }
 
 main();

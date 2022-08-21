@@ -48,51 +48,30 @@ export async function updateAsset(
   const tables = await tableland.list();
   console.log(tables);
 
-  // const { columns: mc, rows: mr } = await tableland.read(
-  //   `SELECT * FROM ${mainTable}`
-  // );
-  // console.log("Main Table");
-  // console.log(mc, mr);
+  const oldLayersTableId = tableland.read(
+    `SELECT id FROM ${layersTable} WHERE value = '${oldValue}' AND trait_type = '${traitType}'`
+  );
+  console.log(oldLayersTableId);
 
-  // const { columns: ac, rows: ar } = await tableland.read(
-  //   `SELECT * FROM ${attributesTable}`
-  // );
-  // console.log("Attributes Table");
-  // console.log(ac, ar);
+  const oldLayerId = oldLayersTableId.rows[0][0];
 
-  // const { columns: lc, rows: lr } = await tableland.read(
-  //   `SELECT * FROM ${layersTable}`
-  // );
-  // console.log("Layers Table");
-  // console.log(lc, lr);
+  const newLayersTableId = tableland.read(
+    `SELECT id FROM ${layersTable} WHERE value = '${newValue}' AND trait_type = '${traitType}'`
+  );
 
-  // const oldLayersTableId = await tableland.read(
-  //   `SELECT id FROM ${layersTable} WHERE value = '${oldValue}' AND trait_type = '${traitType}'`
-  // );
-  // console.log(oldLayersTableId);
+  const newLayerId = newLayersTableId.rows[0][0];
 
-  // const oldLayerId = oldLayersTableId.rows[0][0];
-
-  // const newLayersTableId = await tableland.read(
-  //   `SELECT id FROM ${layersTable} WHERE value = '${newValue}' AND trait_type = '${traitType}'`
-  // );
-  // console.log(newLayersTableId.rows[0][0]);
-
-  // const newLayerId = newLayersTableId.rows[0][0];
-
-  // console.log(oldLayerId);
-  // console.log(newLayerId);
-  // const { hash: attrUpdateTxHash } = await tableland.write(
-  //   `UPDATE ${attributesTable} SET layer_id = ${newLayerId} WHERE main_id = ${id} AND layer_id = ${oldLayerId}`
-  // );
-  // let receipt = tableland.receipt(attrUpdateTxHash);
-  // if (receipt) {
-  //   console.log(`${attributesTable} table updated`);
-  // } else {
-  //   throw new Error(
-  //     `Write table error: could not get '${attributesTable}' transaction receipt: ${attrUpdateTxHash}`
-  //   );
-  // }
+  const { hash: attrUpdateTxHash } = tableland.write(
+    `UPDATE ${attributesTable} SET layer_id = ${newLayerId} WHERE main_id = ${id} AND layer_id = ${oldLayerId}`
+  );
+  let receipt = tableland.receipt(attrUpdateTxHash);
+  if (receipt) {
+    console.log(`${attributesTable} table updated`);
+  } else {
+    throw new Error(
+      `Write table error: could not get '${attributesTable}' transaction receipt: ${attrUpdateTxHash}`
+    );
+  }
 
   const { columns: a, rows: newLayers } = await tableland.read(
     `SELECT layer_id FROM ${attributesTable} WHERE main_id=${id}`
@@ -100,15 +79,11 @@ export async function updateAsset(
 
   let layersToGenerate: any[] = [];
   for (let i = 0; i < newLayers.length; i++) {
-    console.log(newLayers[i][0]);
     const newLayer = await tableland.read(
       `SELECT uri FROM ${layersTable} WHERE id=${newLayers[i][0]}`
     );
-    console.log(newLayer.rows[0][0]);
     layersToGenerate.push(newLayer.rows[0][0]);
   }
-
-  console.log(layersToGenerate);
 
   const saveLayer = (_canvas: any) => {
     fs.writeFileSync(`./build/memory.png`, _canvas.toBuffer("image/png"));
@@ -162,5 +137,3 @@ export async function updateAsset(
 
   await generatePinAndInsert(layersToGenerate);
 }
-
-updateAsset(0, "face", "cyclops", "mustache");

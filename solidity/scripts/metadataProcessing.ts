@@ -86,7 +86,7 @@ async function parseMetadataFile(
  * @returns {Array<Object>} Metadata files parsed to objects, including the overwritten `image` with a CID.
  */
 async function prepareMetadata() {
-  await createNFT(1);
+  await createNFT(2);
   // An array that contains all metadata objects
   const finalMetadata = [];
   // Set the `metadata` & `images` directory path, holding the metadata files & images

@@ -1,15 +1,8 @@
-import { NFT } from "../types";
-import { sleep } from "../utils";
+import axios from "axios";
+import { SERVER_URL } from "../constants";
+import { APIResponse, TokenData } from "../types";
 
-export const getTokenMetadata = async (contractAddress: string, tokenID: string): Promise<NFT> => {
-    await sleep(2000);
-    return {
-        tokenID,
-        // image: 'https://openseauserdata.com/files/b380e6380de1ac397334046e38f9a9c4.svg',
-        image: 'https://openseauserdata.com/files/a307996898e1d8af7022fea791b463ce.svg',
-        attributes: [
-            { traitType: "accessory", value: '1n' },
-            { traitType: "bg", value: 'warm' }
-        ]
-    };
+export const getTokenMetadata = async (contractAddress: string, tokenID: string): Promise<APIResponse<TokenData>> => {
+    const res = (await axios.get(`${SERVER_URL}/collections/${contractAddress}/${tokenID}`)).data;
+    return res;
 };

@@ -13,14 +13,30 @@ export interface StepProps {
 }
 
 
+export type CollectionWriteStatus = 'writeable' | 'not-writeable';
+
 export interface Collection {
+    address: string;
+    status: CollectionWriteStatus;
     layersURI: string;
-    contractAddress: string;
-    isWriteable: boolean;
+    // layers
 }
 
-export interface NFT {
+export interface TokenData {
     tokenID: string;
-    image: string;
+    imageUrl: string;
     attributes: { traitType: string; value: string; }[];
 }
+
+interface SuccessResponse<T> {
+    readonly success: true;
+    readonly data: T;
+}
+interface FailureResponse {
+    readonly success: false;
+    readonly data: string;
+}
+/**
+ * Success or failure API response
+ */
+export declare type APIResponse<T> = SuccessResponse<T> | FailureResponse;

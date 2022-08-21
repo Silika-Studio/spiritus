@@ -10,49 +10,38 @@ export const getTokenMetadata = async (contractAddress: string, tokenID: string,
     const contract =
         new ethers.Contract(contractAddress, getABI(contractAddress), getProvider(network));
 
-    try {
-        const tokenURI = await contract.tokenURI(tokenID);
-        console.log(tokenURI);
-        const { image, name, image_url, attributes } =
-            tokenURI.includes("application/json;base64") ?
-                decodeBase64TokenURI(tokenURI)
-                :
-                (await axios.get<TokenUriResponse>(
-                    ipfsLocationToHttpsGateway(tokenURI),
-                )).data;
-        console.log(tokenURI);
-        console.log(image_url);
-        const safeImageUrl = image ?? image_url;
-        const httpImageUrl = ipfsLocationToHttpsGateway(safeImageUrl);
+    const tokenURI = await contract.tokenURI(tokenID);
+    console.log(tokenURI);
+    const { image, name, image_url, attributes } =
+        tokenURI.includes("application/json;base64") ?
+            decodeBase64TokenURI(tokenURI)
+            :
+            (await axios.get<TokenUriResponse>(
+                ipfsLocationToHttpsGateway(tokenURI),
+            )).data;
+    console.log(tokenURI);
+    console.log(image_url);
+    const safeImageUrl = image ?? image_url;
+    const httpImageUrl = ipfsLocationToHttpsGateway(safeImageUrl);
 
-        // Interim nouns overrides to have the app work
-        // Nouns dont have attributes and the imageURL is an encoded SVG
-        const nounsOverrides = contractAddress === NOUNS_CONTRACT_ADDRESS ?
-            {
-                imageUrl: 'https://openseauserdata.com/files/a307996898e1d8af7022fea791b463ce.svg',
-                attributes: [
-                    { trait_type: "accessory", value: '1n' },
-                    { trait_type: "bg", value: 'warm' }
-                ]
-            } as Partial<TokenData> : {};
+    // Interim nouns overrides to have the app work
+    // Nouns dont have attributes and the imageURL is an encoded SVG
+    const nounsOverrides = contractAddress === NOUNS_CONTRACT_ADDRESS ?
+        {
+            imageUrl: 'https://openseauserdata.com/files/a307996898e1d8af7022fea791b463ce.svg',
+            attributes: [
+                { trait_type: "accessory", value: '1n' },
+                { trait_type: "bg", value: 'warm' }
+            ]
+        } as Partial<TokenData> : {};
 
-        return {
-            assetName: name ?? tokenID,
-            imageUrl: httpImageUrl,
-            id: tokenID,
-            attributes,
-            ...nounsOverrides
-        };
-    } catch (error: any) {
-        console.log('There was an error in resolving the tokenURI!');
-        if (error.response) {
-            console.log(error.response.data);
-            console.log(error.response.status);
-        } else {
-            console.error(error.message);
-            console.log(error);
-        }
-        return { assetName: tokenID, imageUrl: '', id: tokenID, attributes: [] };
-    }
+    return {
+        assetName: name ?? tokenID,
+        imageUrl: httpImageUrl,
+        id: tokenID,
+        attributes,
+        ...nounsOverrides
+    };
+
 
 };

@@ -34,6 +34,7 @@ export interface TokenData {
 export type CollectionWriteStatus = 'writeable' | 'not-writeable';
 
 export interface Collection {
+    address: string;
     status: CollectionWriteStatus;
     layersURI: string;
     // layers

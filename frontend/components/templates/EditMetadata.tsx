@@ -1,10 +1,10 @@
-import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button, Flex, HStack, Image, Input, Text, VStack } from "@chakra-ui/react";
+import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button, Flex, HStack, Image, Input, Text, useToast, VStack } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { getTokenMetadata } from "../../apis/getTokenMetadata";
 import { useCollection } from "../../hooks/useCollection";
 import theme from "../../theme/theme";
-import { NFT, UploadCollectionTraits } from "../../types";
+import { TokenData, UploadCollectionTraits } from "../../types";
 
 interface TraitProps {
     traitType: string;
@@ -46,17 +46,43 @@ export const EditMetadata = () => {
     const gateway = 'https://ipfs.moralis.io:2053/ipfs/';
     const [layers, setLayers] = useState<UploadCollectionTraits>();
     const [tokenID, setTokenID] = useState<string>('');
-    const [tokenMetadata, setTokenMetadata] = useState<NFT>();
-    const [initialTokenMetadata, setInitialTokenMetadata] = useState<NFT>();
+    const [tokenMetadata, setTokenMetadata] = useState<TokenData>();
+    const [initialTokenMetadata, setInitialTokenMetadata] = useState<TokenData>();
+    const toast = useToast();
 
     const handleChange = (event: any) => setTokenID(event.target.value);
 
     const onSubmitTokenID = async () => {
         if (!tokenID) return;
-        const res = (await getTokenMetadata(collection.contractAddress, tokenID));
+        try {
+            const res = (await getTokenMetadata(collection.address, tokenID));
+            if (res.success) {
+                setTokenMetadata(res.data);
+                setInitialTokenMetadata(res.data);
+            } else {
+                toast({
+                    title: 'TokenID not found',
+                    description: 'Try a new ID friendo',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
+        }
+        catch (e) {
+            toast({
+                title: 'TokenID not found',
+                description: 'Try a new ID friendo',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+        }
 
-        setTokenMetadata(res);
-        setInitialTokenMetadata(res);
+
+
+
+
     };
 
     const onResetToken = () => {
@@ -83,8 +109,8 @@ export const EditMetadata = () => {
 
     return (<HStack alignItems="start">
         <VStack w="30vw" spacing="24px">
-            {tokenMetadata?.image ?
-                <Image src={tokenMetadata.image}
+            {tokenMetadata?.imageUrl ?
+                <Image src={tokenMetadata.imageUrl}
                     w="20vw" h="auto" border={`2px solid ${theme.colours.darkBlue}`}
                     alt={tokenMetadata.tokenID}
                 >
@@ -108,6 +134,13 @@ export const EditMetadata = () => {
                     color={theme.colours.darkBlue}
                     border={`4px solid ${theme.colours.darkBlue}`}
                     paddingX="12px"
+                    borderColor={theme.colours.darkBlue}
+                    _hover={{
+                        borderColor: theme.colours.blue
+                    }}
+                    _active={{
+                        borderColor: theme.colours.blue
+                    }}
                 />
                 <Button
                     className="raise"
@@ -124,6 +157,7 @@ export const EditMetadata = () => {
                     // border="none"
                     paddingX="24px"
                     transition="0.25s"
+
                 >
                     Search
                 </Button>
@@ -161,6 +195,7 @@ export const EditMetadata = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel pb={4}>
+
                             <HStack key={j} justifyContent="space-evenly" spacing="0px" flexWrap="wrap">
                                 {traits.map((trait, i) =>
                                     <Trait

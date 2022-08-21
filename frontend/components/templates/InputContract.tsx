@@ -1,5 +1,5 @@
-import { Button, HStack, Input, Text, VStack } from "@chakra-ui/react";
-import { useState } from "react";
+import { Button, HStack, Input, Text, useToast, VStack } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { getContract } from "../../apis/getContract";
 import { useCollection } from "../../hooks/useCollection";
 import theme from "../../theme/theme";
@@ -11,18 +11,34 @@ interface InputContractProps extends StepProps {
 export const InputContract = ({ setCurrentStep }: InputContractProps) => {
     const { setCollection } = useCollection();
     const [isSearching, setIsSearching] = useState(false);
-    const [value, setValue] = useState("");
+    const [value, setValue] = useState("0x42069abfe407c60cf4ae4112bedead391dba1cdb");
     const handleChange = (event: any) => setValue(event.target.value);
+    const toast = useToast();
     // call server for contract, if supported, go to 'edit-metadata'
     // else ask for layersURI
 
     const onSubmit = async () => {
         setIsSearching(true);
-        const res = await getContract(value);
+        try {
+            const res = await getContract(value);
+            setCollection(res);
+            setCurrentStep(!res.layersURI ? 'input-layersURI' : 'edit-metadata');
+            console.log('settingmetadata');
+        } catch (e) {
+            toast({
+                title: 'Collection not supported',
+                description: 'Please input a supported collection',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+        }
         setIsSearching(false);
-        setCollection(res);
-        setCurrentStep(!res.isWriteable ? 'input-layersURI' : 'edit-metadata');
     };
+
+    useEffect(() => {
+        onSubmit();
+    }, []);
     return <VStack color={theme.colours.blueDark} fontSize="24px" alignItems="start">
         <Text>Please input a contract address</Text>
 

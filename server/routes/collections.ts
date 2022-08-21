@@ -1,6 +1,8 @@
 import express, { Request, Response as ExpressResponse } from 'express';
+import { checkLayersURIInABI, getLayersURI } from '../services/collection';
 import { getTokenMetadata } from '../services/nft';
-import { APIResponse, TokenData } from '../types';
+import { supportedCollections } from '../supportedCollections';
+import { APIResponse, Collection, TokenData } from '../types';
 
 export const router = express.Router();
 
@@ -12,14 +14,31 @@ interface GetQueryParams {
 }
 
 type GetResponse = APIResponse<string>;
+type GetCollectionResponse = APIResponse<Collection>;
 
 router.get('/collections/:contract', async (
     req: Request<GetCollectionPathParams, {}, {}, GetQueryParams>,
-    res: ExpressResponse<GetResponse>,
+    res: ExpressResponse<GetCollectionResponse>,
 ) => {
     const { contract } = req.params;
 
-    return res.json({ success: true, data: 'success for ' + contract });
+    if (!contract || !supportedCollections[contract])
+        return res.status(404).json({ success: false, data: "Collection not found" });
+
+    let layersURI = '';
+
+    if (!checkLayersURIInABI(contract)) {
+        layersURI = supportedCollections[contract].layersURI;
+    } else {
+        try {
+            layersURI = await getLayersURI(contract, 'mainnet');
+        } catch (e) {
+            layersURI = supportedCollections[contract].layersURI;
+
+        }
+    }
+
+    return res.json({ success: true, data: { ...supportedCollections[contract], layersURI } });
 });
 
 
@@ -44,10 +63,22 @@ router.get('/collections/:contract/:tokenID', async (
     res: ExpressResponse<GetTokenMetadataResponse>,
 ) => {
     const { contract, tokenID } = req.params;
+    try {
+        const tokenData = await getTokenMetadata(contract, tokenID, 'mainnet');
 
-    const tokenData = await getTokenMetadata(contract, tokenID, 'mainnet');
+        return res.json({ success: true, data: tokenData });
+    } catch (error: any) {
+        console.log('There was an error in resolving the tokenURI!');
+        if (error.response) {
+            console.log(error.response.data);
+            console.log(error.response.status);
+        } else {
+            console.error(error.message);
+            console.log(error);
+        }
+        return res.status(404).json({ success: false, data: 'TokenID not found.' });
 
-    return res.json({ success: true, data: tokenData });
+    }
 });
 
 router.post('/collections/:contract/:tokenID', async (

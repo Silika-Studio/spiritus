@@ -4,6 +4,6 @@ const TablelandTables = {
   layers: "spiritus_layers_80001_1047",
 };
 
-const contractAddress = "0xB8ac46b45e86a1aF5991A49582508e143465614f";
+const contractAddress = "0x18e9DfBFcFBA183069Cbb42d970fc8712aC94489";
 
 export = { TablelandTables, contractAddress };

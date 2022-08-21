@@ -144,12 +144,7 @@ async function main() {
   const Decoy = await ethers.getContractFactory("Decoy");
   // Deploy the contract, passing `tablelandBaseURI` in the constructor's `baseURI` and using the Tableland gateway
   // Also, pass the table's `name` to write to storage in the smart contract
-  const decoy = await Decoy.deploy(
-    tablelandBaseURI,
-    mainName,
-    attributesName,
-    layersName
-  );
+  const decoy = await Decoy.deploy(mainName, attributesName, layersName);
   await decoy.deployed();
 
   // Log the deployed address and call the getter on `baseURIString` (for demonstration purposes)

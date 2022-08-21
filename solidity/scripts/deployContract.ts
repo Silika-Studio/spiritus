@@ -9,7 +9,6 @@ async function main() {
   // Deploy the contract, passing `tablelandBaseURI` in the constructor's `baseURI` and using the Tableland gateway
   // Also, pass the table's `name` to write to storage in the smart contract
   const decoy = await Decoy.deploy(
-    tablelandBaseURI,
     TablelandTables.main,
     TablelandTables.attributes,
     TablelandTables.layers
@@ -22,26 +21,11 @@ async function main() {
   );
   const baseURI = await decoy.tokenBaseURI();
   console.log(`Decoy is using baseURI: ${baseURI}`);
-
-  try {
-    console.log("\nVerifying contract...");
-    await hre.run("verify:verify", {
-      address: decoy.address,
-      contract: "contracts/Decoy.sol:Decoy",
-      constructorArguments: [
-        tablelandBaseURI,
-        TablelandTables.main,
-        TablelandTables.attributes,
-        TablelandTables.layers,
-      ],
-    });
-  } catch (err: any) {
-    if (err.message.includes("Reason: Already Verified")) {
-      console.log(
-        `Contract is already verified! Check it out on Polygonscan: https://mumbai.polygonscan.com/address/${decoy.address}`
-      );
-    }
-  }
 }
 
-main();
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

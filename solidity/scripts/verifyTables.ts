@@ -12,7 +12,6 @@ async function main() {
     address: contractAddress, // Update with your contract address
     contract: "contracts/Decoy.sol:Decoy",
     constructorArguments: [
-      "https://testnet.tableland.network/query?mode=list&s=",
       TablelandTables.main,
       TablelandTables.attributes,
       TablelandTables.layers,

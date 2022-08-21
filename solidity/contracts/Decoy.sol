@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract Decoy is ERC721A, Ownable {
     /// A URI used to reference off-chain metadata.
     // This will use the Tableland gateway: https://testnet.tableland.network/query?mode=list&s=
-    string public tokenBaseURI;
+    string public tokenBaseURI = "https://testnet.tableland.network/query?mode=list&s=";
 
     string public layersURI;
 
@@ -27,12 +27,10 @@ contract Decoy is ERC721A, Ownable {
     event SetLayersURI(string indexed layersURI);
 
     constructor(
-        string memory _tokenBaseURI,
         string memory _mainTable,
         string memory _attributesTable,
         string memory _layersTable
     ) ERC721A("Decoy", "D") {
-        tokenBaseURI = _tokenBaseURI;
         mainTable = _mainTable;
         attributesTable = _attributesTable;
         layersTable = _layersTable;
@@ -76,42 +74,24 @@ contract Decoy is ERC721A, Ownable {
         /*
         A SQL query to JOIN three tables to compose the metadata accross a `main`, `attributes`, and `layers` table
         */
-        // string memory query = string.concat(
-        //     "SELECT%20json_object%28%27id%27%2Cid%2C%27name%27%2Cname%2C%27description%27%2Cdescription%2C%27attributes%27%2Cjson_group_array%28json_object%28%27trait_type%27%2Ctrait_type%2C%27value%27%2Cvalue%29%29%29%20FROM%20",
-        //     mainTable,
-        //     "%20JOIN%20",
-        //     attributesTable,
-        //     "%20ON%20",
-        //     mainTable,
-        //     "%2Eid%20%3D%20",
-        //     attributesTable,
-        //     "%2Emain_id"
-        //     "%20JOIN%20",
-        //     layersTable,
-        //     "%20ON%20",
-        //     layersTable,
-        //     "%2Eid%20%3D%20",
-        //     attributesTable,
-        //     "%2Elayer_id%20WHERE%20id%3D"
-        // );
         string memory query = string.concat(
-            "SELECT+json_object%28%27id%27%2C",
+            "SELECT%20json_object%28%27id%27%2C",
             mainTable,
-            ".id%2C%27name%27%2Cname%2C%27image%27%2Cimage%2C%27description%27%2Cdescription%2C%27attributes%27%2Cjson_group_array%28json_object%28%27trait_type%27%2Ctrait_type%2C%27value%27%2Cvalue%29%29%29+FROM+",
+            ".id%2C%27name%27%2Cname%2C%27image%27%2Cimage%2C%27description%27%2Cdescription%2C%27attributes%27%2Cjson_group_array%28json_object%28%27trait_type%27%2Ctrait_type%2C%27value%27%2Cvalue%29%29%29%20FROM%20",
             mainTable,
-            "+JOIN+",
+            "%20JOIN%20",
             attributesTable,
-            "+ON+",
+            "%20ON%20",
             mainTable,
-            ".id+%3D+",
+            ".id%20%3D%20",
             attributesTable,
-            ".main_id+JOIN+",
+            ".main_id%20JOIN%20",
             layersTable,
-            "+ON+",
+            "%20ON%20",
             layersTable,
-            ".id+%3D+",
+            ".id%20%3D%20",
             attributesTable,
-            ".layer_id+WHERE+",
+            ".layer_id%20WHERE%20",
             mainTable,
             ".id%3D"
         );

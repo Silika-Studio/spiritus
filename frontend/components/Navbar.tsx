@@ -30,19 +30,19 @@ export const Navbar: React.FC = () => {
 
 
     useEffect(() => {
-        if (router.pathname === '/') {
-            const onScroll: EventListener = (_event: Event) => {
+        const onScroll: EventListener = (_event: any) => {
+            // if (router.pathname === '/')
+            setHasBackground(_event.target.scrollingElement.scrollTop >= _event.target.scrollingElement.clientHeight - 200 || router.pathname !== '/');
 
-                setHasBackground(window.scrollY >= window.innerHeight);
-            };
+        };
 
-            window.addEventListener("scroll", onScroll);
+        window.addEventListener("scroll", onScroll);
 
-            return () => { window.removeEventListener("scroll", onScroll); };
-        }
+        return () => window.removeEventListener("scroll", onScroll);;
     }, []);
 
     useEffect(() => {
+        console.log("SETTING BG");
         setHasBackground(router.pathname !== '/');
     }, [router.pathname]);
 

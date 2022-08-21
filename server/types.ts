@@ -12,7 +12,7 @@ interface FailureResponse {
 export declare type APIResponse<T> = SuccessResponse<T> | FailureResponse;
 export { };
 
-export interface Trait {
+export interface TraitFromURI {
     trait_type: string;
     value: string;
 }
@@ -21,14 +21,14 @@ export interface TokenUriResponse {
     image: string;
     id: string;
     image_url: string;
-    attributes: Trait[];
+    attributes: TraitFromURI[];
 }
 
-export interface TokenData {
+export interface TokenDataFromURI {
     assetName: string;
     imageUrl: string;
     id: string;
-    attributes: Trait[];
+    attributes: TraitFromURI[];
 }
 
 export type CollectionWriteStatus = 'writeable' | 'not-writeable';
@@ -38,4 +38,33 @@ export interface Collection {
     status: CollectionWriteStatus;
     layersURI: string;
     // layers
+}
+
+export interface UploadTraitType { value: string, url: string; }
+
+export type UploadCollectionTraits = {
+    rootHash: string;
+    collectionName: string;
+    traits: Record<string, UploadTraitType[]>;
+};
+
+export interface LoadTraitType { value: string, url: string; data: Buffer; }
+export type LoadCollectionTraits = {
+    layerHash: string;
+    collectionName: string;
+    traits: Record<string, LoadTraitType[]>;
+};
+
+export type LayerMap = Record<string, Record<string, LoadTraitType>>;
+
+export interface Trait {
+    traitType: string;
+    value: string;
+}
+
+export interface TokenData {
+    assetName: string;
+    imageUrl: string;
+    id: string;
+    attributes: Trait[];
 }

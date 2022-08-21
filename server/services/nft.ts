@@ -30,8 +30,8 @@ export const getTokenMetadata = async (contractAddress: string, tokenID: string,
         {
             imageUrl: 'https://openseauserdata.com/files/a307996898e1d8af7022fea791b463ce.svg',
             attributes: [
-                { trait_type: "accessory", value: '1n' },
-                { trait_type: "bg", value: 'warm' }
+                { traitType: "accessory", value: '1n' },
+                { traitType: "bg", value: 'warm' }
             ]
         } as Partial<TokenData> : {};
 

@@ -40,3 +40,8 @@ interface FailureResponse {
  * Success or failure API response
  */
 export declare type APIResponse<T> = SuccessResponse<T> | FailureResponse;
+
+export interface Trait {
+    traitType: string;
+    value: string;
+}

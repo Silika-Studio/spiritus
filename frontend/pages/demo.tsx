@@ -28,7 +28,7 @@ export const Demo: React.FC = () => {
         setCurrentStep(step);
     };
     return (
-        <Flex marginTop="200px" justifyContent="center" alignItems="center" minH="calc(100vh - 200px)">
+        <Flex marginTop="200px" justifyContent="center" alignItems="center" >
             {stepMap[currentStep] &&
                 React.createElement(stepMap[currentStep], { setCurrentStep: setCurrStepWrapper })
             }

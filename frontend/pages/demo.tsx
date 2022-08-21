@@ -19,7 +19,7 @@ export const Demo: React.FC = () => {
     const { client } = useWallet();
     const [currentStep, setCurrentStep] =
         // useState<Step>(client.connected ? 'input-contract' : 'connect');
-        useState<Step>('input-contract');
+        useState<Step>('connect');
 
     const setCurrStepWrapper = (step: Step) => {
 

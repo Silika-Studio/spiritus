@@ -23,7 +23,7 @@ export const ConnectWallet = ({ setCurrentStep }: ConnectWalletProps) => {
 
     useEffect(() => {
         if (accounts.length)
-            setCurrentStep('input-contract');
+            setCurrentStep('sign');
     }, [accounts]);
 
     const init = () => {

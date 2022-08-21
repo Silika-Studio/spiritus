@@ -11,7 +11,8 @@ interface InputContractProps extends StepProps {
 export const InputContract = ({ setCurrentStep }: InputContractProps) => {
     const { setCollection } = useCollection();
     const [isSearching, setIsSearching] = useState(false);
-    const [value, setValue] = useState("0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03");
+    //0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03
+    const [value, setValue] = useState("");
     const handleChange = (event: any) => setValue(event.target.value);
     const toast = useToast();
     // call server for contract, if supported, go to 'edit-metadata'

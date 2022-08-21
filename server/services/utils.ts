@@ -109,15 +109,19 @@ export const loadAllLayers = async (layersURI: string) => {
 
 
 export const generateImage = async (traits: Trait[], layerMap: LayerMap) => {
-    const buf = await sharp(layerMap[traits[0].traitType][traits[0].value].data)
+    const now = Date.now();
+    await sharp(layerMap[traits[0].traitType][traits[0].value].data)
         .composite(
             traits.slice(1).map(t => (
                 { input: layerMap[t.traitType][t.value].data }
             ))
-        ).resize(400, 400).toBuffer();
+        ).toFile(`./bin/${now}.png`);
+
+    const img = fs.readFileSync(`./bin/${now}.png`, { encoding: 'base64' });
+
 
     const r = await axios.post("https://deep-index.moralis.io/api/v2/ipfs/uploadFolder",
-        [{ path: 'img.png', content: buf }],
+        [{ path: 'img.png', content: img }],
         {
             headers: {
                 "X-API-KEY": process.env.MORALIS_API_KEY!,

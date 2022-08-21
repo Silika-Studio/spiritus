@@ -65,6 +65,8 @@ import {
     Trait,
     UploadCollectionTraits
 } from "../types";
+import mime = require("mime");
+import path = require("path");
 
 const ipfsGatewayUrl = "https://ipfs.moralis.io:2053/ipfs/";
 
@@ -135,9 +137,12 @@ export const generateImage = async (traits: Trait[], layerMap: LayerMap) => {
         )
         .toFile(`./bin/${now}.png`);
 
-    const img = fs.readFileSync(`./bin/${now}.png`, { encoding: "base64" });
-
-    const image = new File([img], 'img.png');
+    async function fileFromPath(filePath: string) {
+        const content = await fs.promises.readFile(filePath);
+        const type = mime.getType(filePath);
+        return new File([content], path.basename(filePath), { type: type ?? undefined });
+    }
+    const image = await fileFromPath(`./bin/${now}.png`);
     // Upload to IPFS using NFT Storage
     console.log(process.env.NFT_STORAGE_API_KEY);
     const storage = new NFTStorage({ token: process.env.NFT_STORAGE_API_KEY! });

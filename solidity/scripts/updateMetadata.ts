@@ -137,3 +137,5 @@ export async function updateAsset(
 
   await generatePinAndInsert(layersToGenerate);
 }
+
+updateAsset(0, "background", "arizona", "blue");

@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "es2022",
     "module": "Node16",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "skipLibCheck": true,
-    "lib": ["es6"]
-  }
+    "skipLibCheck": true
+  },
+  "exclude": ["dist", "node_modules"],
+  "include": ["./test", "./utils", "./scripts"],
+  "files": ["./hardhat.config.ts"]
 }

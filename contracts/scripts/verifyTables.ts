@@ -1,11 +1,9 @@
-// Standard `ethers` import for blockchain operations, plus `network` for logging the flagged network
-import { ethers, network } from "hardhat";
 const hre = require("hardhat");
 require("@nomiclabs/hardhat-etherscan");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const { TablelandTables, contractAddress } = require("./consts");
+const { TablelandTables, contractAddress } = require("../utils/consts");
 
 async function main() {
   await hre.run("verify:verify", {

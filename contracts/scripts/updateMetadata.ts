@@ -29,7 +29,7 @@ ctx.imageSmoothingEnabled = format.smoothing;
 
 require("@nomiclabs/hardhat-etherscan");
 
-const { TablelandTables } = require("./consts");
+const { TablelandTables } = require("../utils/consts");
 
 export async function updateAsset(
   id: number,

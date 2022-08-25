@@ -21,33 +21,38 @@ type LoadCollectionTraits = {
   collectionName: string;
   traits: Record<string, LoadTraitType[]>;
 };
+type IPFSLayer = {
+  id: number;
+  trait_type: string;
+  value: string;
+  filename: string;
+};
 
 const ipfsGatewayUrl = "https://ipfs.moralis.io:2053/ipfs/";
 
-async function loadLayersFromIPFS() {
+export async function loadLayersFromIPFS() {
   const layers: LoadCollectionTraits = {
     layerHash: "QmPqF84LGToejXPpfD4TaKQykpUscpyjSvcWsCA7L7aKXh",
     collectionName: "goodmindsbread",
     traits: {},
   };
 
-  const allLayers: any[] = [];
+  const ipfsLayers: IPFSLayer[] = [];
+
   const r = await axios.get<UploadCollectionTraits>(
     `${ipfsGatewayUrl}${layers.layerHash}/layers.json`
   );
 
   Object.entries(r.data.traits).forEach(([traitType, traits]) => {
     traits.forEach((trait, i) => {
-      allLayers.push({
-        id: allLayers.length,
+      ipfsLayers.push({
+        id: ipfsLayers.length,
         trait_type: traitType,
         value: trait.value,
-        uri: trait.url,
+        filename: trait.url,
       });
     });
   });
 
-  return allLayers;
+  return ipfsLayers;
 }
-
-export = loadLayersFromIPFS;

@@ -1,6 +1,6 @@
 const globalAny: any = global;
 // Standard `ethers` import for blockchain operations, plus `network` for logging the flagged network
-const { ethers, network } = require("hardhat");
+import { ethers, network } from "hardhat";
 const hre = require("hardhat");
 // The script required to upload metadata to IPFS
 const { prepareSql } = require("./prepareSql");
@@ -24,8 +24,8 @@ async function main() {
   const mainSchema = `id int primary key, name text, description text, image text, hash text`;
   // Should have one `main` row (a token) to many `attributes`, so no need to introduce a primary key constraint
   const attributesSchema = `main_id int not null, layer_id int not null`;
-  // Holds the attribute data and related uri for the layer
-  const layersSchema = `id int primary key, trait_type text not null, value text, uri text`;
+  // Holds the attribute data and related filename for the layer
+  const layersSchema = `id int primary key, trait_type text not null, value text, filename text`;
   // Define the (optional) prefix, noting the main & attributes tables
   const mainPrefix = "spiritus_main";
   const attributesPrefix = "spiritus_attributes";

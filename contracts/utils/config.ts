@@ -1,9 +1,9 @@
 // General metadata for Ethereum
-export let namePrefix = "Good Minds";
-export let description = "Good Minds Breads";
+const namePrefix = "Good Minds";
+const description = "Good Minds Breads";
 // export let baseUri = "ipfs://baseURI";
 
-export const layerConfigurations = [
+const layerConfigurations = [
   {
     growEditionSizeTo: 5,
     // Good minds bread
@@ -11,8 +11,10 @@ export const layerConfigurations = [
   },
 ];
 
-export const format = {
+const format = {
   width: 512,
   height: 512,
   smoothing: false,
 };
+
+export { namePrefix, description, layerConfigurations, format };

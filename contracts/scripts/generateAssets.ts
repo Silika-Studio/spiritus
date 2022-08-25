@@ -1,30 +1,33 @@
-import type { Attribute, Metadata, Layer } from "./types";
+import dotenv from "dotenv";
+import path from "path";
+import fs from "fs";
+import { createCanvas, loadImage } from "canvas";
+import axios from "axios";
+import type { Attribute, Metadata, Layer } from "../utils/types";
 const { NFTStorage, File } = require("nft.storage");
-const dotenv = require("dotenv");
-const path = require("path");
 const { getFilesFromPath } = require("files-from-path");
 const mime = require("mime");
+const sha1 = require("sha1");
+
 dotenv.config();
 
 // The NFT.Storage API token, passed to `NFTStorage` function as a `token`
 const nftStorageApiKey = process.env.NFT_STORAGE_API_KEY;
 
 const basePath = process.cwd();
-
-const fs = require("fs");
-const sha1 = require("sha1");
-const { createCanvas, loadImage } = require("canvas");
 const buildDir = `${basePath}/build`;
-import axios from "axios";
 const {
   format,
   description,
   layerConfigurations,
   namePrefix,
 } = require(`${basePath}/utils/config.ts`);
+
+// Canvas setup
 const canvas = createCanvas(format.width, format.height);
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = format.smoothing;
+
 let metadataList: Metadata[] = [];
 let attributesList: Attribute[] = [];
 let dnaList = new Set();
@@ -341,3 +344,5 @@ export const createNFT = async (
     layerConfigIndex++;
   }
 };
+
+createNFT(2);

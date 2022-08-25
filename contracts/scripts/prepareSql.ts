@@ -11,9 +11,9 @@ dotenv.config();
  * @returns {{main: string, attributes: string[]}} SQL statements for metadata table writes.
  */
 export async function prepareSql(
-  mainTable: string,
-  attributesTable: string,
-  layersTable: string
+  mainTable: string | undefined,
+  attributesTable: string | undefined,
+  layersTable: string | undefined
 ) {
   // Prepare the metadata (handles all of the IPFS-related actions & JSON parsing).
   const metadata = await prepareMetadata();
@@ -52,12 +52,16 @@ export async function prepareSql(
     sqlInsertStatements.push(statement);
   }
 
+  // Array to hold the statements for the `layers` table
   const layersStatements = [];
 
   for (let i = 0; i < layers.length; i++) {
     const layer = layers[i];
-    const { id, trait_type, value, uri } = layer;
-    const layersStatement = `INSERT INTO ${layersTable} (id, trait_type, value, uri) VALUES (${id},'${trait_type}', '${value}', '${uri}');`;
+    const { id, trait_type, value, filename } = layer;
+
+    // Construct the `layers` table INSERT statements
+    // Layers Schema: id int primary key, trait_type text not null, value text, filename text
+    const layersStatement = `INSERT INTO ${layersTable} (id, trait_type, value, uri) VALUES (${id},'${trait_type}', '${value}', '${filename}');`;
     layersStatements.push(layersStatement);
   }
 

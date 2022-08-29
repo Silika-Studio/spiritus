@@ -4,7 +4,6 @@ import { ethers } from 'ethers';
 import fs from 'fs';
 import https from 'https';
 import sharp from 'sharp';
-import abiNouns from "./abi2.json";
 
 require('dotenv').config({ path: require('find-config')('.env') });
 
@@ -27,29 +26,29 @@ var wallet = new ethers.Wallet(pk, providerInstance);
 const addr = '0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03';
 // const addr='0x5FbDB2315678afecb367f032d93F642f64180aa3'
 
-const contract =
-    new ethers.Contract(addr, abiNouns, wallet);
-const read = async () => {
-    console.log("calling");
+// const contract =
+//     new ethers.Contract(addr, abiNouns, wallet);
+// const read = async () => {
+//     console.log("calling");
 
-    const res = await contract.dataURI(0);
-    console.log(res);
-    const data: NounsTokenMetadata = JSON.parse(
-        Buffer.from(res.substring(29), 'base64').toString('ascii'),
-    );
-    console.log(data);
-    // console.log(JSON.parse(atob(res)));
-    // console.log(Buffer.from(res, 'base64'));
-};
+//     const res = await contract.dataURI(0);
+//     console.log(res);
+//     const data: NounsTokenMetadata = JSON.parse(
+//         Buffer.from(res.substring(29), 'base64').toString('ascii'),
+//     );
+//     console.log(data);
+//     // console.log(JSON.parse(atob(res)));
+//     // console.log(Buffer.from(res, 'base64'));
+// };
 
-const write = async () => {
-    console.log("calling");
+// const write = async () => {
+//     console.log("calling");
 
-    const res = await contract.safeMint(walletAddr);
-    console.log(res);
-};
+//     const res = await contract.safeMint(walletAddr);
+//     console.log(res);
+// };
 
-interface UploadTraitType { value: string, url: string; }
+interface UploadTraitType { id: number, value: string, url: string; }
 
 type UploadCollectionTraits = {
     rootHash: string;
@@ -90,19 +89,20 @@ export const saveAllLayers = async (collection: string) => {
             },
         );
         const aPath = r.data[0].path;
-        collectionTraits.rootHash = aPath.substring(aPath.indexOf('/Qm')).split('/')[1];
+        const rootHash = aPath.substring(aPath.indexOf('/Qm')).split('/')[1];
+        collectionTraits.rootHash = rootHash;
 
-        r.data.forEach(d => {
+        r.data.forEach((data, index) => {
 
 
-            const pathComponents = d.path.replace('.png', '').split('/');
+            const pathComponents = data.path.replace('.png', '').split('/');
             const fileCleaned = pathComponents[pathComponents.length - 1];
             const traitType = fileCleaned.split('-')[0];
             const traitValue = fileCleaned.replace(traitType + '-', '');
 
             if (!collectionTraits.traits[traitType]) collectionTraits.traits[traitType] = [];
 
-            collectionTraits.traits[traitType].push({ value: traitValue, url: fileCleaned + '.png' });
+            collectionTraits.traits[traitType].push({ id: index, value: traitValue, url: `ipfs://${rootHash}/${fileCleaned}.png` });
 
         });
         console.log(r.data);
@@ -171,4 +171,4 @@ const loadAllLayers = async () => {
 
 };
 
-loadAllLayers();
+saveAllLayers("goodmindsbreads");

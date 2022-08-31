@@ -1,6 +1,6 @@
 # Spiritus
 
-Spiritus is a static and dynamic NFT (dNFT) development and management platform. The proof-of-concept application was built during the 2022 ETHMexico Hackathon in which it placed as an overall finalist and won prizes from both [Wallet Connect](https://walletconnect.com/) and [IPFS](https://ipfs.tech/).
+Spiritus is a static and dynamic NFT (dNFT) development and management platform.
 
 ## Motivation
 

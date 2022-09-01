@@ -1,22 +1,18 @@
-const globalAny: any = global;
-// Standard `ethers` import for chain interaction, `network` for logging, and `run` for verifying contracts
-const { ethers } = require("hardhat");
-// The script required to upload metadata to IPFS
-const { prepareSqlForTables } = require("./prepareSql");
-// Import Tableland
-const { connect } = require("@tableland/sdk");
+import { ethers } from "hardhat";
+import { connect } from "@tableland/sdk";
+import { TablelandTables } from "../utils/consts";
+
 // Import 'node-fetch' and set globally -- needed for Tableland to work with CommonJS
+const globalAny: any = global;
 const fetch = (...args: [any]) =>
   import("node-fetch").then(({ default: fetch }) => fetch.apply(null, args));
 globalAny.fetch = fetch;
 
-require("@nomiclabs/hardhat-etherscan");
-
-const { TablelandTables } = require("./consts");
 async function main() {
   const [signer] = await ethers.getSigners();
   const tableland = await connect({ signer, chain: "polygon-mumbai" });
 
+  // Tableland tables to query
   const mainTable = TablelandTables.main;
   const attributesTable = TablelandTables.attributes;
   const layersTable = TablelandTables.layers;
@@ -40,4 +36,9 @@ async function main() {
   console.log(lc, lr);
 }
 
-main();
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

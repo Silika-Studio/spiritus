@@ -1,17 +1,19 @@
-const { NFTStorage, File } = require("nft.storage");
-const { getFilesFromPath } = require("files-from-path");
-const mime = require("mime");
-const fs = require("fs");
-const path = require("path");
-const dotenv = require("dotenv");
-const basePath = process.cwd();
-const buildDir = `${basePath}/build`;
+import fs from "fs";
+import path from "path";
+import mime from "mime";
+import * as dotenv from "dotenv";
 dotenv.config();
 
-import { createNFT } from "./generateAssets";
+import { createNFT } from "../../scripts/generateAssets";
 
-// The NFT.Storage API token, passed to `NFTStorage` function as a `token`
+import type { Metadata } from "../utils/types";
+
+const { getFilesFromPath } = require("files-from-path");
+const { NFTStorage, File } = require("nft.storage");
 const nftStorageApiKey = process.env.NFT_STORAGE_API_KEY;
+
+const basePath = process.cwd();
+const buildDir = `${basePath}/build`;
 
 /**
  * Helper to retrieve a single file from some path.
@@ -57,14 +59,16 @@ async function parseMetadataFile(
   const imageCid = await uploadImageToIpfs(id, imagesDirPath);
   // Find the corresponding metadata file (matching `id`)
   const metadataFilePath = path.join(metadataDirPath, `${id}.json`);
+
   let metadataFile;
+
   try {
     metadataFile = await fs.promises.readFile(metadataFilePath);
   } catch (error) {
     console.error(`Error reading file in metadata directory: ${id}.json`);
   }
   // Parse metatadata buffer (from 'readFile') to an object
-  const metadataJson = JSON.parse(metadataFile.toString());
+  const metadataJson: Metadata = JSON.parse(metadataFile.toString());
   // Overwrite the empty 'image' with the IPFS CID at the NFT.Storage gateway
   metadataJson.image = `https://${imageCid}.ipfs.nftstorage.link/`;
   // Write the file to the metadata directory. This is not essential for Tableland
@@ -85,10 +89,10 @@ async function parseMetadataFile(
  * Prepare metadata as an array of metadata objects.
  * @returns {Array<Object>} Metadata files parsed to objects, including the overwritten `image` with a CID.
  */
-async function prepareMetadata() {
+export async function prepareMetadata() {
   await createNFT(2);
   // An array that contains all metadata objects
-  const finalMetadata = [];
+  const finalMetadata: Metadata[] = [];
   // Set the `metadata` & `images` directory path, holding the metadata files & images
   const metadataDirPath = `${buildDir}/metadata`;
   const imagesDirPath = `${buildDir}/images`;
@@ -98,7 +102,7 @@ async function prepareMetadata() {
   });
   for (const file of metadataFiles) {
     // Strip the leading `/` from the file's `name`, which is
-    let id = file.name.replace(/\.[^/.]+$/, "");
+    let id: number = file.name.replace(/\.[^/.]+$/, "");
     try {
       // Retrieve the metadata files as an object, parsed from the metadata files
       let metadataObj = await parseMetadataFile(
@@ -107,7 +111,7 @@ async function prepareMetadata() {
         imagesDirPath
       );
       console.log(`Successfully pinned image to ${metadataObj.image}`);
-      finalMetadata.push(await metadataObj);
+      finalMetadata.push(metadataObj);
     } catch (error) {
       console.error(`Error parsing metadata file: ${id}`);
     }
@@ -116,5 +120,3 @@ async function prepareMetadata() {
   // Return metadata files
   return finalMetadata;
 }
-
-export = prepareMetadata;

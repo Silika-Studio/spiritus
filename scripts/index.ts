@@ -58,15 +58,15 @@ type UploadCollectionTraits = {
 };
 
 
-export const saveAllLayers = async () => {
-    const collectionTraits: UploadCollectionTraits = { rootHash: '', collectionName: 'nouns', traits: {} };
-    const relativeLayersFolder = '../layers/nouns/';
+export const saveAllLayers = async (collection: string) => {
+    const collectionTraits: UploadCollectionTraits = { rootHash: '', collectionName: `${collection}`, traits: {} };
+    const relativeLayersFolder = `../layers/${collection}/`;
     let ipfsImageArray: { path: string, content: string; }[] = [];
     var files = fs.readdirSync(__dirname + '/' + relativeLayersFolder);
     for (let i = 0; i < files.length; i++) {
         const currFile = files[i];
         console.log(currFile);
-        const img = fs.readFileSync("layers/nouns/" + currFile, { encoding: 'base64' });
+        const img = fs.readFileSync(`layers/${collection}/` + currFile, { encoding: 'base64' });
 
 
         ipfsImageArray.push(

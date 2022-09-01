@@ -1,0 +1,3 @@
+[submodule "spiritus.wiki"]
+	path = spiritus.wiki
+	url = https://github.com/Silika-Studio/spiritus.wiki.git

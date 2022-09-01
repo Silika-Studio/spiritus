@@ -1,34 +1,9 @@
 import axios from "axios";
-
-interface UploadTraitType {
-  value: string;
-  url: string;
-}
-
-type UploadCollectionTraits = {
-  rootHash: string;
-  collectionName: string;
-  traits: Record<string, UploadTraitType[]>;
-};
-
-interface LoadTraitType {
-  value: string;
-  url: string;
-  data: Buffer;
-}
-type LoadCollectionTraits = {
-  layerHash: string;
-  collectionName: string;
-  traits: Record<string, LoadTraitType[]>;
-};
-type IPFSLayer = {
-  id: number;
-  trait_type: string;
-  value: string;
-  filename: string;
-};
-
-const ipfsGatewayUrl = "https://ipfs.moralis.io:2053/ipfs/";
+import type {
+  LoadCollectionTraits,
+  IPFSLayer,
+  UploadCollectionTraits,
+} from "../utils/types";
 
 export async function loadLayersFromIPFS() {
   const layers: LoadCollectionTraits = {
@@ -38,6 +13,8 @@ export async function loadLayersFromIPFS() {
   };
 
   const ipfsLayers: IPFSLayer[] = [];
+
+  const ipfsGatewayUrl = "https://ipfs.moralis.io:2053/ipfs/";
 
   const r = await axios.get<UploadCollectionTraits>(
     `${ipfsGatewayUrl}${layers.layerHash}/layers.json`

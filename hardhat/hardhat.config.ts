@@ -3,6 +3,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-waffle";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 
@@ -30,8 +31,8 @@ const config: HardhatUserConfig = {
     version: "0.8.13",
     settings: {
       optimizer: {
-        enabled: true,
-        runs: 2000,
+        runs: 200,
+        enabled: false,
       },
     },
   },

@@ -1,27 +1,33 @@
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
+dotenv.config();
 import path from "path";
 import fs from "fs";
+import sha1 from "sha1";
+import mime from "mime";
 import { createCanvas, loadImage } from "canvas";
 import axios from "axios";
-import type { Attribute, Metadata, Layer } from "../utils/types";
+import {
+  format,
+  layerConfigurations,
+  namePrefix,
+  description,
+} from "../src/utils/config";
+import type {
+  Attribute,
+  Metadata,
+  DNALayer,
+  LoadCollectionTraits,
+  UploadCollectionTraits,
+  Layer,
+  LayerConfig,
+  IPFSLayerForArtEngine,
+} from "../src/utils/types";
+
 const { NFTStorage, File } = require("nft.storage");
-const { getFilesFromPath } = require("files-from-path");
-const mime = require("mime");
-const sha1 = require("sha1");
-
-dotenv.config();
-
-// The NFT.Storage API token, passed to `NFTStorage` function as a `token`
 const nftStorageApiKey = process.env.NFT_STORAGE_API_KEY;
 
 const basePath = process.cwd();
 const buildDir = `${basePath}/build`;
-const {
-  format,
-  description,
-  layerConfigurations,
-  namePrefix,
-} = require(`${basePath}/utils/config.ts`);
 
 // Canvas setup
 const canvas = createCanvas(format.width, format.height);
@@ -33,39 +39,21 @@ let attributesList: Attribute[] = [];
 let dnaList = new Set();
 const DNA_DELIMITER = "#";
 
+const removeQueryStrings = (dna: string) => {
+  const query = /(\?.*$)/;
+  return dna.replace(query, "");
+};
+
 const cleanDna = (_str: string) => {
   const withoutOptions = removeQueryStrings(_str);
   let dna = Number(withoutOptions.split(":").shift());
   return dna;
 };
 
-interface UploadTraitType {
-  value: string;
-  url: string;
-}
-
-type UploadCollectionTraits = {
-  rootHash: string;
-  collectionName: string;
-  traits: Record<string, UploadTraitType[]>;
-};
-
-interface LoadTraitType {
-  value: string;
-  url: string;
-  data: Buffer;
-}
-
-type LoadCollectionTraits = {
-  layerHash: string;
-  collectionName: string;
-  traits: Record<string, LoadTraitType[]>;
-};
-
 const getIPFSElements = async (trait_value: string) => {
   const layers: LoadCollectionTraits = {
     layerHash: "QmPqF84LGToejXPpfD4TaKQykpUscpyjSvcWsCA7L7aKXh",
-    collectionName: "goodmindsbread",
+    collectionName: "",
     traits: {},
   };
   const ipfsGatewayUrl = "https://ipfs.moralis.io:2053/ipfs/";
@@ -74,7 +62,7 @@ const getIPFSElements = async (trait_value: string) => {
     `${ipfsGatewayUrl}${layers.layerHash}/layers.json`
   );
 
-  let finals = r.data.traits[trait_value]
+  let finals: IPFSLayerForArtEngine[] = r.data.traits[trait_value]
     .filter((item: any) => !/(^|\/)\.[^\/\.]/g.test(item))
     .map((layer: any, index: number) => {
       return {
@@ -88,30 +76,6 @@ const getIPFSElements = async (trait_value: string) => {
   return finals;
 };
 
-const layersSetup = async (layersOrder: any) => {
-  const layers = layersOrder.map(async (layerObj: any, index: number) => ({
-    id: index,
-    elements: await getIPFSElements(`${layerObj.name}`),
-
-    name:
-      layerObj.options?.["displayName"] != undefined
-        ? layerObj.options?.["displayName"]
-        : layerObj.name,
-    blend:
-      layerObj.options?.["blend"] != undefined
-        ? layerObj.options?.["blend"]
-        : "source-over",
-    opacity:
-      layerObj.options?.["opacity"] != undefined
-        ? layerObj.options?.["opacity"]
-        : 1,
-    bypassDNA:
-      layerObj.options?.["bypassDNA"] !== undefined
-        ? layerObj.options?.["bypassDNA"]
-        : false,
-  }));
-  return layers;
-};
 const saveImage = (editionCount: number) => {
   fs.writeFileSync(
     `${buildDir}/images/${editionCount}.png`,
@@ -162,12 +126,10 @@ const addAttributes = (_element: any) => {
   });
 };
 
-const loadLayerImg = async (_layer: LayerWithDNA) => {
+const loadLayerImg = async (_layer: DNALayer) => {
   try {
-    return new Promise(async (resolve) => {
-      const image = await loadImage(`${_layer.selectedElement.path}`);
-      resolve({ layer: _layer, loadedImage: image });
-    });
+    const image = await loadImage(`${_layer.selectedElement.path}`);
+    return { layer: _layer, loadedImage: image };
   } catch (error) {
     console.error("Error loading image:", error);
   }
@@ -182,17 +144,38 @@ const drawElement = (_renderObject: any) => {
   addAttributes(_renderObject);
 };
 
-interface LayerWithDNA {
-  name: string;
-  blend: string;
-  opacity: number;
-  selectedElement: any;
-}
+const layersSetup = async (layersOrder: LayerConfig[]) => {
+  const layers = layersOrder.map(
+    async (layerObj: LayerConfig, index: number) => ({
+      id: index,
+      elements: await getIPFSElements(`${layerObj.name}`),
 
-const constructLayerToDna = (_dna = "", _layers = []) => {
-  let mappedDnaToLayers: LayerWithDNA[] = _layers.map((layer: any, index) => {
+      name:
+        layerObj.options?.["displayName"] != undefined
+          ? layerObj.options?.["displayName"]
+          : layerObj.name,
+      blend:
+        layerObj.options?.["blend"] != undefined
+          ? layerObj.options?.["blend"]
+          : "source-over",
+      opacity:
+        layerObj.options?.["opacity"] != undefined
+          ? layerObj.options?.["opacity"]
+          : 1,
+      bypassDNA:
+        layerObj.options?.["bypassDNA"] !== undefined
+          ? layerObj.options?.["bypassDNA"]
+          : false,
+    })
+  );
+  return layers;
+};
+
+const constructLayerToDna = (_dna = "", _layers: Layer[] = []) => {
+  let mappedDnaToLayers: DNALayer[] = _layers.map((layer: Layer, index) => {
     let selectedElement = layer.elements.find(
-      (e: any) => e.id == cleanDna(_dna.split(DNA_DELIMITER)[index])
+      (e: IPFSLayerForArtEngine) =>
+        e.id == cleanDna(_dna.split(DNA_DELIMITER)[index])
     );
     return {
       name: layer.name,
@@ -204,14 +187,6 @@ const constructLayerToDna = (_dna = "", _layers = []) => {
   return mappedDnaToLayers;
 };
 
-/**
- * In some cases a DNA string may contain optional query parameters for options
- * such as bypassing the DNA isUnique check, this function filters out those
- * items without modifying the stored DNA.
- *
- * @param {String} _dna New DNA string
- * @returns new DNA string with any items that should be filtered, removed.
- */
 const filterDNAOptions = (_dna: any) => {
   const dnaItems = _dna.split(DNA_DELIMITER);
   const filteredDNA = dnaItems.filter((element: any) => {
@@ -231,29 +206,16 @@ const filterDNAOptions = (_dna: any) => {
   return filteredDNA.join(DNA_DELIMITER);
 };
 
-/**
- * Cleaning function for DNA strings. When DNA strings include an option, it
- * is added to the filename with a ?setting=value query string. It needs to be
- * removed to properly access the file name before Drawing.
- *
- * @param {String} dna The entire newDNA string
- * @returns Cleaned DNA string without querystring parameters.
- */
-const removeQueryStrings = (dna: string) => {
-  const query = /(\?.*$)/;
-  return dna.replace(query, "");
-};
-
 const isDnaUnique = (dnaList = new Set(), dna = "") => {
   const filteredDNA = filterDNAOptions(dna);
   return !dnaList.has(filteredDNA);
 };
 
-const createDna = (_layers: any) => {
-  let randNum: any[] = [];
-  _layers.forEach((layer: any) => {
+const createDna = (_layers: Layer[]) => {
+  let randNum: string[] = [];
+  _layers.forEach((layer: Layer) => {
     let totalWeight = 0;
-    layer.elements.forEach((element: any) => {
+    layer.elements.forEach((element: IPFSLayerForArtEngine) => {
       totalWeight += element.weight;
     });
     // number between 0 - totalWeight
@@ -303,22 +265,23 @@ export const createNFT = async (
     const layers = await layersSetup(
       layerConfigurations[layerConfigIndex].layersOrder
     );
-    let layerValues: any = await Promise.all(layers);
+
+    let layerValues: Layer[] = await Promise.all(layers);
 
     while (editionCount <= editionSize) {
       let newDna = createDna(layerValues);
       if (isDnaUnique(dnaList, newDna)) {
-        let results: LayerWithDNA[] = constructLayerToDna(newDna, layerValues);
+        let results: DNALayer[] = constructLayerToDna(newDna, layerValues);
         let loadedElements: any[] = [];
 
-        results.forEach((layer: LayerWithDNA) => {
+        results.forEach((layer: DNALayer) => {
           loadedElements.push(loadLayerImg(layer));
         });
 
-        await Promise.all(loadedElements).then((renderObjectArray) => {
+        await Promise.all(loadedElements).then((renderObjectArray: Layer[]) => {
           debug ? console.log("Clearing canvas") : null;
           ctx.clearRect(0, 0, format.width, format.height);
-          renderObjectArray.forEach((renderObject) => {
+          renderObjectArray.forEach((renderObject: Layer) => {
             drawElement(renderObject);
           });
           debug ? console.log("Editions left to create: ", editionInd) : null;

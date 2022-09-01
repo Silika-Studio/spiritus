@@ -1,9 +1,9 @@
 const hre = require("hardhat");
-require("@nomiclabs/hardhat-etherscan");
-const dotenv = require("dotenv");
+import "@nomiclabs/hardhat-etherscan";
+import * as dotenv from "dotenv";
 dotenv.config();
 
-const { TablelandTables, contractAddress } = require("../utils/consts");
+import { TablelandTables, contractAddress } from "./utils/consts";
 
 async function main() {
   await hre.run("verify:verify", {

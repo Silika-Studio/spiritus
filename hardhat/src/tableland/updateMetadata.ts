@@ -1,35 +1,27 @@
-import { Blob } from "buffer";
+import { ethers } from "hardhat";
+import { connect } from "@tableland/sdk";
+import fs from "fs";
+import path from "path";
+import mime from "mime";
+import { format } from "../utils/config";
+import { TablelandTables } from "../utils/consts";
 
-const globalAny: any = global;
-// Standard `ethers` import for chain interaction, `network` for logging, and `run` for verifying contracts
-const { ethers } = require("hardhat");
-// Import Tableland
-const { connect } = require("@tableland/sdk");
-// The NFT.Storage API token, passed to `NFTStorage` function as a `token`
+import * as dotenv from "dotenv";
+dotenv.config();
 const nftStorageApiKey = process.env.NFT_STORAGE_API_KEY;
-const mime = require("mime");
+
 const { NFTStorage, File } = require("nft.storage");
+
 // Import 'node-fetch' and set globally -- needed for Tableland to work with CommonJS
+const globalAny: any = global;
 const fetch = (...args: [any]) =>
   import("node-fetch").then(({ default: fetch }) => fetch.apply(null, args));
 globalAny.fetch = fetch;
 
-const fs = require("fs");
-const path = require("path");
-
-require("dotenv").config({ path: require("find-config")(".env") });
-
-const basePath = process.cwd();
-const { format } = require(`${basePath}/utils/config.ts`);
-
-const { createCanvas, loadImage } = require("canvas");
+import { createCanvas, loadImage } from "canvas";
 const canvas = createCanvas(format.width, format.height);
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = format.smoothing;
-
-require("@nomiclabs/hardhat-etherscan");
-
-const { TablelandTables } = require("../utils/consts");
 
 export async function updateAsset(
   id: number,
@@ -48,23 +40,23 @@ export async function updateAsset(
   const tables = await tableland.list();
   console.log(tables);
 
-  const oldLayersTableId = tableland.read(
+  const oldLayersTableId = await tableland.read(
     `SELECT id FROM ${layersTable} WHERE value = '${oldValue}' AND trait_type = '${traitType}'`
   );
   console.log(oldLayersTableId);
 
   const oldLayerId = oldLayersTableId.rows[0][0];
 
-  const newLayersTableId = tableland.read(
+  const newLayersTableId = await tableland.read(
     `SELECT id FROM ${layersTable} WHERE value = '${newValue}' AND trait_type = '${traitType}'`
   );
 
   const newLayerId = newLayersTableId.rows[0][0];
 
-  const { hash: attrUpdateTxHash } = tableland.write(
+  const { hash: attrUpdateTxHash } = await tableland.write(
     `UPDATE ${attributesTable} SET layer_id = ${newLayerId} WHERE main_id = ${id} AND layer_id = ${oldLayerId}`
   );
-  let receipt = tableland.receipt(attrUpdateTxHash);
+  let receipt = await tableland.receipt(attrUpdateTxHash);
   if (receipt) {
     console.log(`${attributesTable} table updated`);
   } else {
@@ -125,7 +117,7 @@ export async function updateAsset(
     const { hash: mainUpdateTxHash } = await tableland.write(
       `UPDATE ${mainTable} SET image = '${newURI}' WHERE id = ${id}`
     );
-    let receipt = tableland.receipt(mainUpdateTxHash);
+    let receipt = await tableland.receipt(mainUpdateTxHash);
     if (receipt) {
       console.log(`${mainTable} table updated`);
     } else {

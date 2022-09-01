@@ -1,11 +1,9 @@
-const globalAny: any = global;
-// Standard `ethers` import for chain interaction, `network` for logging, and `run` for verifying contracts
 import { ethers } from "hardhat";
-// Import Tableland
 import { connect } from "@tableland/sdk";
-// Import table values
 import { TablelandTables } from "../utils/consts";
+
 // Import 'node-fetch' and set globally -- needed for Tableland to work with CommonJS
+const globalAny: any = global;
 const fetch = (...args: [any]) =>
   import("node-fetch").then(({ default: fetch }) => fetch.apply(null, args));
 globalAny.fetch = fetch;

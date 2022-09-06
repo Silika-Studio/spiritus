@@ -1,5 +1,6 @@
 import { Flex, HStack, Image, Stack, Text, VStack } from "@chakra-ui/react";
 // import client from "@walletconnect/sign-client";
+import '@rainbow-me/rainbowkit/styles.css';
 import Head from 'next/head';
 import Link from "next/link";
 import theme from "../theme/theme";

@@ -1,30 +1,28 @@
-import { Button, Flex, HStack, Image, Stack, Text, VStack } from "@chakra-ui/react";
+import { Flex, HStack, Image, Stack, Text, VStack } from "@chakra-ui/react";
 // import client from "@walletconnect/sign-client";
 import Head from 'next/head';
 import Link from "next/link";
-import { useEffect } from "react";
-import { useWalletConnectClient } from "../contexts/ClientContext";
 import theme from "../theme/theme";
 
 export default function Home() {
-    const {
-        client,
-        pairings,
-        session,
-        connect,
-        disconnect,
-        chains,
-        accounts,
-        balances,
-        isFetchingBalances,
-        isInitializing,
-        setChains,
-    } = useWalletConnectClient();
+    // const {
+    //     client,
+    //     pairings,
+    //     session,
+    //     connect,
+    //     disconnect,
+    //     chains,
+    //     accounts,
+    //     balances,
+    //     isFetchingBalances,
+    //     isInitializing,
+    //     setChains,
+    // } = useWalletConnectClient();
 
     // useEffect(() => { disconnect(); }, []);
-    useEffect(() => {
-        setChains(["eip155:80001", "eip155:1"]);
-    }, [accounts]);
+    // useEffect(() => {
+    //     setChains(["eip155:80001", "eip155:1"]);
+    // }, [accounts]);
 
 
     return (
@@ -43,8 +41,10 @@ export default function Home() {
                         <Image src="./spiritusmin.svg" alt="" w="46%" h="auto"
                         />
                         <Link href="/demo">
-                            <Button h="80px" w="300px"
+                            <Flex h="80px" w="300px"
                                 // borderRadius="12px"
+                                justifyContent="center"
+                                alignItems="center"
                                 backgroundColor={theme.colours.teal}
                                 _hover={{ backgroundColor: theme.colours.teal }}
                                 className="button-see-more"
@@ -60,7 +60,8 @@ export default function Home() {
                                 <span className="line-4"></span>
                                 <span className="line-5"></span>
                                 <span className="line-6"></span>
-                                Demo</Button>
+                                Demo
+                            </Flex>
                         </Link>
 
                         <HStack h="36px" w="100vw" backgroundColor="#3FD1FF" alignItems="center" justifyContent="space-evenly"

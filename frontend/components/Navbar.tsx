@@ -1,8 +1,9 @@
 import { Button, HStack, Image, Stack, Text } from "@chakra-ui/react";
+import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
-import { useWalletConnectClient } from "../contexts/ClientContext";
+import { useAccount } from "wagmi";
 import theme from "../theme/theme";
 import { ButtonShadow } from "./atoms/ButtonShadow";
 
@@ -13,20 +14,22 @@ import { ButtonShadow } from "./atoms/ButtonShadow";
 export const Navbar: React.FC = () => {
     const router = useRouter();
     const [hasBackground, setHasBackground] = useState(false);
-
-    const {
-        client,
-        pairings,
-        session,
-        connect,
-        disconnect,
-        chains,
-        accounts,
-        balances,
-        isFetchingBalances,
-        isInitializing,
-        setChains,
-    } = useWalletConnectClient();
+    const { address } = useAccount();
+    const { openConnectModal } = useConnectModal();
+    const { openAccountModal } = useAccountModal();
+    // const {
+    //     client,
+    //     pairings,
+    //     session,
+    //     connect,
+    //     disconnect,
+    //     chains,
+    //     accounts,
+    //     balances,
+    //     isFetchingBalances,
+    //     isInitializing,
+    //     setChains,
+    // } = useWalletConnectClient();
 
 
     useEffect(() => {
@@ -39,15 +42,15 @@ export const Navbar: React.FC = () => {
         window.addEventListener("scroll", onScroll);
 
         return () => window.removeEventListener("scroll", onScroll);;
-    }, []);
-
-    useEffect(() => {
-        console.log("SETTING BG");
-        setHasBackground(router.pathname !== '/');
     }, [router.pathname]);
 
-    const account = accounts.length ? accounts[0].split(':')[2] : undefined;
-    console.log(account);
+    // useEffect(() => {
+    //     console.log("SETTING BG");
+    //     setHasBackground(router.pathname !== '/');
+    // }, [router.pathname]);
+
+    // const account = accounts.length ? accounts[0].split(':')[2] : undefined;
+    // console.log(account);
     return (
         <Stack zIndex="1000" position="fixed" top="0px" left="0px" h="200px" w="100vw" >
             <HStack h="144px" justifyContent="space-between" blur="8px" paddingX="48px"
@@ -78,16 +81,17 @@ export const Navbar: React.FC = () => {
                     </ButtonShadow>
 
                     <ButtonShadow isLight={!hasBackground}>
-                        <Button onClick={accounts.length ? disconnect : () => connect()} fontFamily="Poppins" margin="0px" fontSize="28px" fontWeight="bold"
+                        <Button onClick={address ? openAccountModal : openConnectModal} fontFamily="Poppins" margin="0px" fontSize="28px" fontWeight="bold"
                             cursor="pointer" border="none"
                             backgroundColor="transparent !important"
                             color={hasBackground ? theme.colours.darkBlue : theme.colours.textLight}
                         >
-                            {account ?
-                                `${account.slice(0, 5)}...${account.slice(account.length - 4)}` :
+                            {address ?
+                                `${address.slice(0, 5)}...${address.slice(address.length - 4)}` :
                                 'Connect'
                             }
                         </Button>
+                        {/* <ConnectButton /> */}
                     </ButtonShadow>
                 </HStack>
 

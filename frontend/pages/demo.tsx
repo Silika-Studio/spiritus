@@ -4,7 +4,6 @@ import { ConnectWallet } from "../components/templates/ConnectWallet";
 import { EditMetadata } from "../components/templates/EditMetadata";
 import { InputContract } from "../components/templates/InputContract";
 import { SignMessage } from "../components/templates/SignMessage";
-import { useWallet } from "../hooks/useWallet";
 import { Step, StepProps } from "../types";
 
 const stepMap: Record<Step, ({ setCurrentStep }: StepProps) => ReactElement> = {
@@ -16,7 +15,6 @@ const stepMap: Record<Step, ({ setCurrentStep }: StepProps) => ReactElement> = {
 };
 
 export const Demo: React.FC = () => {
-    const { client } = useWallet();
     const [currentStep, setCurrentStep] =
         // useState<Step>(client.connected ? 'input-contract' : 'connect');
         useState<Step>('connect');

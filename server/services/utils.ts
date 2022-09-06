@@ -92,6 +92,7 @@ export const loadAllLayers = async (layersURI: string) => {
                     .toBuffer());
 
                 if (!layers[traitType]) layers[traitType] = {};
+                console.log(`We got ${traitType}:${trait.value}`);
                 layers[traitType][trait.value] = { data: buffer, ...trait };
             };
             promises.push(get());

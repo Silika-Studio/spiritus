@@ -1,20 +1,39 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import WalletConnect from '@walletconnect/client';
 import type { AppProps } from 'next/app';
 import { useState } from 'react';
 import { Navbar } from '../components/Navbar';
-import { ChainDataContextProvider } from '../contexts/ChainDataContext';
-import { ClientContextProvider } from '../contexts/ClientContext';
-import { JsonRpcContextProvider } from '../contexts/JsonRpcContext';
 import { CollectionContext } from '../hooks/useCollection';
 import '../styles/globals.css';
 import { Collection } from '../types';
 
+import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { chain, configureChains, createClient, WagmiConfig } from 'wagmi';
+import { alchemyProvider } from 'wagmi/providers/alchemy';
+import { publicProvider } from 'wagmi/providers/public';
+
+const { chains, provider } = configureChains(
+    [chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum],
+    [
+        alchemyProvider(),
+        publicProvider()
+    ]
+);
+
+const { connectors } = getDefaultWallets({
+    appName: 'My RainbowKit App',
+    chains
+});
+
+const wagmiClient = createClient({
+    autoConnect: true,
+    connectors,
+    provider
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
     const [collection, setCollection] = useState<Collection>();
-    const [signClient, setSignClient] = useState<WalletConnect>();
-    const [address, setAddress] = useState('');
+    // const [signClient, setSignClient] = useState<WalletConnect>();
+    // const [address, setAddress] = useState('');
 
     // const initClient = async () => {
 
@@ -88,24 +107,27 @@ function MyApp({ Component, pageProps }: AppProps) {
                 initClient,
                 disconnectClient
             }}> */}
-            <ChainDataContextProvider>
+            {/* <ChainDataContextProvider>
                 <ClientContextProvider>
-                    <JsonRpcContextProvider>
-                        <CollectionContext.Provider value={{
-                            collection: collection ?? {
-                                contractAddress: "0x69",
-                                layersURI: "https://ipfs.moralis.io:2053/ipfs/QmZ6mcScDMKiYt49fddbMzFwmfmc6os2a7QsbeJ7ocZP2M/layers.json",
-                                isSupported: true
-                            } as any, setCollection
-                        }}>
-                            <Navbar></Navbar>
+                    <JsonRpcContextProvider> */}
+            <WagmiConfig client={wagmiClient}>
+                <RainbowKitProvider chains={chains}>
+                    <CollectionContext.Provider value={{
+                        collection: {
+                            contractAddress: "0x69",
+                            layersURI: "https://ipfs.moralis.io:2053/ipfs/QmZ6mcScDMKiYt49fddbMzFwmfmc6os2a7QsbeJ7ocZP2M/layers.json",
+                            isSupported: true
+                        } as any, setCollection
+                    }}>
+                        <Navbar></Navbar>
 
-                            <Component {...pageProps} />
-                        </CollectionContext.Provider>
-
-                    </JsonRpcContextProvider>
+                        <Component {...pageProps} />
+                    </CollectionContext.Provider>
+                </RainbowKitProvider>
+            </WagmiConfig>
+            {/* </JsonRpcContextProvider>
                 </ClientContextProvider>
-            </ChainDataContextProvider>
+            </ChainDataContextProvider> */}
         </ChakraProvider>
 
     );

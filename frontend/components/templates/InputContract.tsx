@@ -40,6 +40,7 @@ export const InputContract = ({ setCurrentStep }: InputContractProps) => {
     useEffect(() => {
         onSubmit();
     }, []);
+
     return <VStack color={theme.colours.blueDark} fontSize="24px" alignItems="start">
         <Text>Please input a contract address</Text>
 
